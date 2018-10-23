@@ -1,0 +1,37 @@
+<!DOCTYPE beans PUBLIC "-//SPRING//DTD BEAN//EN" "http://www.springframework.org/dtd/spring-beans.dtd">
+<beans>
+	<bean id="main" class="edu.mcw.rgd.RNASeqPipeline.Manager">
+		<property name="version" value="RNASeq Pipeline v 1.0 as of May 19, 2017" />
+		<property name="ncbiSoftFilesFtpLink" value="ftp://ftp.ncbi.nlm.nih.gov/geo/series/"/>
+		<property name="indexOfStartFolderForDownload" value="102"/> <!-- default is 0; applies to first thread only -->
+		<property name="indexOfStopFolderForDownload" value="103"/> <!-- applies to last thread only -->
+		<property name="numberOfFilesPerFolderOnNcbi" value="1000"/> <!-- 1000 -->
+		<property name="rnaSeqToRgdMapper" ref="rnaSeqToRgdMapper"/>
+		<property name="numberOfMapperThreads" value="10"/><!-- default is 10; so far best performance is got with 10 threads -->
+		<property name="numberOfDownloaderThreads" value="20"/>
+		<property name="downloaderMaxRetryCount" value="3"/><!-- at each try, downloader increases wait time by 2 times starting from intervalInSeconds -->
+		<property name="downloaderDownloadRetryIntervalInSeconds" value="5"/>
+		<property name="performDownload" value="false"/>
+		<property name="performMapping" value="true"/>
+	</bean>
+	<bean id="rnaSeqDao" class="edu.mcw.rgd.RNASeqPipeline.RnaSeqDAO">
+		<property name="crossSpeciesAnatomyOntId" value="UBERON"/>
+		<property name="ontTermExactSynonymType" value="exact_synonym"/>
+		<property name="cellOntId" value="CL"/>
+		<property name="ratStrainsOntId" value="RS"/>
+	</bean>
+	<bean id="rnaSeqToRgdMapper" class="edu.mcw.rgd.RNASeqPipeline.RnaSeqToRgdMapper">
+		<property name="crossSpeciesAnatomyOntId" value="UBERON"/>
+		<property name="ontTermExactSynonymType" value="exact_synonym"/>
+		<property name="cellOntId" value="CL"/>
+		<property name="ratStrainsOntId" value="RS"/>
+		<property name="tabDelimetedTextParser" ref="tabDelimetedTextParser"/>
+		<property name="dbConnectionCheckInterval" value="5000"/>
+	</bean>
+	<bean id="tabDelimetedTextParser" class="edu.mcw.rgd.RNASeqPipeline.TabDelimetedTextParser">
+		<property name="rnaSeqRgdStrainMappingFileName" value="rna_seq_strain_rgd_strain_mapping.txt"/>
+		<property name="columnNoForRnaSeqStrainName" value="0"/>
+		<property name="columnNoForRgdOntTermAccId" value="1"/>
+		<property name="columnNoForRgdId" value="2"/>
+	</bean>
+</beans>
