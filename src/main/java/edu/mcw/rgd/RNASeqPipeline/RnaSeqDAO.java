@@ -5,36 +5,25 @@ package edu.mcw.rgd.RNASeqPipeline;
  */
 
 import edu.mcw.rgd.dao.AbstractDAO;
-import edu.mcw.rgd.dao.impl.OntologyXDAO;
 import edu.mcw.rgd.process.Utils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.dao.DuplicateKeyException;
-import org.springframework.jdbc.core.SqlParameter;
-import org.springframework.jdbc.object.SqlUpdate;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
-import java.sql.Types;
 import java.util.*;
 
 public class RnaSeqDAO extends AbstractDAO {
-    private final static Log loggerColumnSize = LogFactory.getLog("column_size");
-    private final static Log loggerSummary;
-    private final static Log loggerDublicate;
-    private OntologyXDAO ontologyXDAO = new OntologyXDAO();
+    private final Log loggerColumnSize = LogFactory.getLog("column_size");
+    private final Log loggerSummary = LogFactory.getLog("dublicate");
+    private final Log loggerDublicate = LogFactory.getLog("summary");
+
     private String crossSpeciesAnatomyOntId;
     private String ontTermExactSynonymType;
     private String cellOntId;
     private String ratStrainsOntId;
-    static {
-        loggerDublicate = LogFactory.getLog("dublicate");
-        loggerSummary = LogFactory.getLog("summary");
-    }
-
-    public RnaSeqDAO() {
-    }
 
     public void insertRnaSeq(Series series){
         try {
@@ -277,18 +266,14 @@ public class RnaSeqDAO extends AbstractDAO {
 
     public void updateRgdMappingFields(List<RnaSeq> rnaSeqList) throws Exception {
         Date time0 = Calendar.getInstance().getTime();
-        Iterator<RnaSeq> it = rnaSeqList.iterator();
-        while( it.hasNext() ) {
-            RnaSeq r = it.next();
+        for (RnaSeq r : rnaSeqList) {
             updateRgdFields(r);
         }
         loggerSummary.info("==========> Update Ont Terms Time : " + Utils.formatElapsedTime(time0.getTime(), System.currentTimeMillis()) + ". -----");
     }
 
     public void updateRgdStrainRgdIds(Set<RnaSeq> rnaSeqList) throws Exception {
-        Iterator<RnaSeq> it = rnaSeqList.iterator();
-        while( it.hasNext() ) {
-            RnaSeq r = it.next();
+        for (RnaSeq r : rnaSeqList) {
             updateRgdStrainRgdId(r);
         }
     }
@@ -331,8 +316,8 @@ public class RnaSeqDAO extends AbstractDAO {
 
         String sql = "UPDATE rna_seq SET RGD_TISSUE_TERM_ACC=?, RGD_CELL_TERM_ACC = ?, RGD_STRAIN_TERM_ACC=?, RGD_STRAIN_RGD_ID = ? WHERE key=? ";
 
-        return update(sql, new Object[]{rnaSeq.getRgdTissueTermAcc(), rnaSeq.getRgdCellTermAcc(),
-                rnaSeq.getRgdStrainTermAcc(), rnaSeq.getRgdStrainRgdId(), rnaSeq.getKey()});
+        return update(sql, rnaSeq.getRgdTissueTermAcc(), rnaSeq.getRgdCellTermAcc(),
+                rnaSeq.getRgdStrainTermAcc(), rnaSeq.getRgdStrainRgdId(), rnaSeq.getKey());
     }
 
     /**
@@ -344,13 +329,7 @@ public class RnaSeqDAO extends AbstractDAO {
     public int updateRgdStrainRgdId(RnaSeq rnaSeq) throws Exception{
 
         String sql = "UPDATE rna_seq SET RGD_STRAIN_RGD_ID = ? WHERE key=? ";
-
-        SqlUpdate su = new SqlUpdate(this.getDataSource(), sql);
-        su.declareParameter(new SqlParameter(Types.INTEGER));
-        su.declareParameter(new SqlParameter(Types.INTEGER));
-        su.compile();
-
-        return su.update(new Object[]{rnaSeq.getRgdStrainRgdId(), rnaSeq.getKey()});
+        return update(sql, rnaSeq.getRgdStrainRgdId(), rnaSeq.getKey());
     }
 
     /**
@@ -361,50 +340,12 @@ public class RnaSeqDAO extends AbstractDAO {
      */
     public void updateRnaSeq(RnaSeq rnaSeq) throws Exception{
 
-        SqlUpdate su = new SqlUpdate(this.getDataSource(), "update RnaSeq set GEO_ACCESSION_ID=?, STUDY_TITLE=?, SUBMISSION_DATE=?, " +
+        String sql = "update RnaSeq set GEO_ACCESSION_ID=?, STUDY_TITLE=?, SUBMISSION_DATE=?, " +
                 "PUBMED_ID=?, PLATFORM_ID=?, PLATFORM_NAME=?, PLATFORM_TECHNOLOGY=?, TOTAL_NUMBER_OF_SAMPLES=?, NUMBER_OF_RAT_SAMPLES=?, CONTRIBUTORS=?,  SAMPLE_ACCESSION_ID=?, " +
                 "SAMPLE_TITLE=?, SAMPLE_ORGANISM=?, SAMPLE_SOURCE=?, SAMPLE_AGE=?, SAMPLE_GENDER=?, SAMPLE_CELL_TYPE=?, OVERALL_DESIGN=?, " +
                 "SAMPLE_EXTRACT_PROTOCOL=?, SAMPLE_TREATMENT_PROTOCOL=?, SUMMARY=?, SAMPLE_DATA_PROCESSING=?, SAMPLE_SUPPLEMENTARY_FILES=?, SAMPLE_CHARACTERISTICS=?, " +
                 "SAMPLE_RELATION=?, SAMPLE_STRAIN=?, SAMPLE_CELL_LINE=? , SAMPLE_GROWTH_PROTOCOL=?, STUDY_RELATION=?, SAMPLE_TISSUE=?,  RGD_TISSUE_TERM_ACC=?, " +
-                "RGD_CELL_TERM_ACC=?, RGD_STRAIN_TERM_ACC=?, RGD_STRAIN_RGD_ID=?  where KEY=?");
-
-        su.declareParameter(new SqlParameter(Types.VARCHAR)); // GEO_ACCESSION_ID
-        su.declareParameter(new SqlParameter(Types.VARCHAR)); // STUDY_TITLE
-        su.declareParameter(new SqlParameter(Types.VARCHAR)); // SUBMISSION_DATE
-        su.declareParameter(new SqlParameter(Types.VARCHAR)); // PUBMED_ID
-        su.declareParameter(new SqlParameter(Types.VARCHAR)); // PLATFORM_ID
-        su.declareParameter(new SqlParameter(Types.VARCHAR)); // PLATFORM_NAME
-        su.declareParameter(new SqlParameter(Types.VARCHAR)); // PLATFORM_TECHNOLOGY
-        su.declareParameter(new SqlParameter(Types.VARCHAR)); // TOTAL_NUMBER_OF_SAMPLES
-        su.declareParameter(new SqlParameter(Types.VARCHAR)); // NUMBER_OF_RAT_SAMPLES
-        su.declareParameter(new SqlParameter(Types.VARCHAR)); // CONTRIBUTORS
-        su.declareParameter(new SqlParameter(Types.VARCHAR)); // SAMPLE_ACCESSION_ID
-        su.declareParameter(new SqlParameter(Types.VARCHAR)); // SAMPLE_TITLE
-        su.declareParameter(new SqlParameter(Types.VARCHAR)); // SAMPLE_ORGANISM
-        su.declareParameter(new SqlParameter(Types.VARCHAR)); // SAMPLE_SOURCE
-        su.declareParameter(new SqlParameter(Types.VARCHAR)); // SAMPLE_AGE
-        su.declareParameter(new SqlParameter(Types.VARCHAR)); // SAMPLE_GENDER
-        su.declareParameter(new SqlParameter(Types.VARCHAR)); // SAMPLE_CELL_TYPE
-        su.declareParameter(new SqlParameter(Types.CLOB)); // OVERALL_DESIGN
-        su.declareParameter(new SqlParameter(Types.CLOB)); // SAMPLE_EXTRACT_PROTOCOL
-        su.declareParameter(new SqlParameter(Types.CLOB)); // SAMPLE_TREATMENT_PROTOCOL
-        su.declareParameter(new SqlParameter(Types.CLOB)); // SUMMARY
-        su.declareParameter(new SqlParameter(Types.CLOB)); // SAMPLE_DATA_PROCESSING
-        su.declareParameter(new SqlParameter(Types.CLOB)); // SAMPLE_SUPPLEMENTARY_FILES
-        su.declareParameter(new SqlParameter(Types.CLOB)); // SAMPLE_CHARACTERISTICS
-        su.declareParameter(new SqlParameter(Types.VARCHAR)); // SAMPLE_RELATION
-        su.declareParameter(new SqlParameter(Types.VARCHAR)); // SAMPLE_STRAIN
-        su.declareParameter(new SqlParameter(Types.VARCHAR)); // SAMPLE_CELL_LINE
-        su.declareParameter(new SqlParameter(Types.CLOB)); // SAMPLE_GROWTH_PROTOCOL
-        su.declareParameter(new SqlParameter(Types.CLOB)); // STUDY_RELATION
-        su.declareParameter(new SqlParameter(Types.CLOB)); // SAMPLE_TISSUE
-        su.declareParameter(new SqlParameter(Types.VARCHAR)); // RGD_TISSUE_TERM_ACC
-        su.declareParameter(new SqlParameter(Types.VARCHAR)); // RGD_CELL_TERM_ACC
-        su.declareParameter(new SqlParameter(Types.VARCHAR)); // RGD_STRAIN_TERM_ACC
-        su.declareParameter(new SqlParameter(Types.INTEGER)); // RGD_STRAIN_RGD_ID
-
-
-        su.compile();
+                "RGD_CELL_TERM_ACC=?, RGD_STRAIN_TERM_ACC=?, RGD_STRAIN_RGD_ID=?  where KEY=?";
 
         Object[] oa = new Object[]{rnaSeq.getGeoAccessionId(), rnaSeq.getStudyTitle(), rnaSeq.getSubmissionDate(), rnaSeq.getPubmedId(), rnaSeq.getPlatformId(),
                 rnaSeq.getPlatformId(), rnaSeq.getPlatformName(), rnaSeq.getTotalNumberOfSamples(), rnaSeq.getNumberOfRatSamples(), rnaSeq.getContributors(),
@@ -415,7 +356,7 @@ public class RnaSeqDAO extends AbstractDAO {
                 rnaSeq.getStudyRelation(), rnaSeq.getSampleTissue(), rnaSeq.getRgdTissueTermAcc(), rnaSeq.getRgdCellTermAcc(),
                 rnaSeq.getRgdStrainTermAcc(), rnaSeq.getRgdStrainRgdId(), rnaSeq.getKey()};
 
-        int upVal = su.update(oa);
+        update(sql, oa);
 
     }
 
