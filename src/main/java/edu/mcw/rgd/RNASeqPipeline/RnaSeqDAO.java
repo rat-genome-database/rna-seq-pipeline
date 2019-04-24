@@ -25,6 +25,11 @@ public class RnaSeqDAO extends AbstractDAO {
     private String cellOntId;
     private String ratStrainsOntId;
 
+    public List<RnaSeq> getDataForGSE(String gseAccId) throws Exception {
+        String sql = "SELECT * FROM rna_seq WHERE geo_accession_id=?";
+        return RnaSeqQuery.execute(this, sql, gseAccId);
+    }
+
     public void insertRnaSeq(Series series){
         try {
             String platformTechnology = "";
@@ -41,9 +46,8 @@ public class RnaSeqDAO extends AbstractDAO {
                         "SAMPLE_CELL_TYPE, SAMPLE_CELL_LINE, SAMPLE_GROWTH_PROTOCOL, SAMPLE_EXTRACT_PROTOCOL, SAMPLE_TREATMENT_PROTOCOL, SAMPLE_DATA_PROCESSING, " +
                         "SAMPLE_SUPPLEMENTARY_FILES, SAMPLE_RELATION, SUPPLEMENTARY_FILES ) " +
                         "VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?, ?)";
-                int key = 0;
 
-                key = this.getNextKey("GEO_SEQ");
+                int key = this.getNextKey("GEO_SEQ");
 
                 Object[] array = new Object[]{
                         Integer.valueOf(key),                                       /*0*/
@@ -236,33 +240,6 @@ public class RnaSeqDAO extends AbstractDAO {
             }
         }
     }
-
-
-   /* public void updateBatchForOntTermMapping(List<RnaSeq> rnaSeqList) throws Exception{
-
-        Connection conn = null;
-        try {
-            conn =  this.getConnection();
-            String sql = "";
-
-            conn.setAutoCommit(false);
-
-            Statement stmt = conn.createStatement();
-
-            for(RnaSeq rnaSeq : rnaSeqList) {
-                sql = "UPDATE rna_seq SET RGD_ONT_TERM_ACC = '" + rnaSeq.getRgdOntTermAcc() + "' WHERE key=" + rnaSeq.getKey();
-                stmt.addBatch(sql);
-            }
-            stmt.executeBatch();
-            conn.commit();
-            loggerSummary.info("Total number of RnaSeq records mapped to RGD by Ont_Term : " + rnaSeqList.size());
-        } finally {
-            try {
-                conn.close();
-            }catch (Exception ignored) {
-            }
-        }
-    }*/
 
     public void updateRgdMappingFields(List<RnaSeq> rnaSeqList) throws Exception {
         Date time0 = Calendar.getInstance().getTime();

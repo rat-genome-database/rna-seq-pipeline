@@ -14,7 +14,7 @@ public class DownloaderThread implements Runnable {
     private int threadNum;
     private int startIndexForFolder;
     private int stopIndexForFolder;
-    private  int maxNumOfFilesPerFolderOnNcbi;
+    private int maxNumOfFilesPerFolderOnNcbi;
     private RnaSeqDAO rnaSeqDao;
     private SoftFileDownloader softFileDownloader;
     private SoftFileParser softFileParser;
@@ -31,49 +31,6 @@ public class DownloaderThread implements Runnable {
         this.softFileParser = softFileParser;
 
     }
-
-   /* public void run() {
-        loggerSummary.info("DownloaderThread-" + threadNum + " => started interval folders: " + startIndexForFolder +
-                "-" + stopIndexForFolder + ", start stop files: " + startIndexForFile + "-" + stopIndexForFile +
-                ", time: " + Calendar.getInstance().getTime());
-
-        int j = startIndexForFile;
-
-        /*if (threadNum == 0) // for the first thread the starting file index can be set to different value other than 0
-            j = startIndexForFile;*/
-
-      /*  String softFileName;
-        for (int i = startIndexForFolder; i < stopIndexForFolder; i++) {
-            for (; j < maxNumOfFilesPerFolderOnNcbi; j++) {
-
-                //stopIndexForFile can only be different only for last Thread
-                //for the last Thread if it is the last file to be processed then break the loop
-                if (stopIndexForFile != maxNumOfFilesPerFolderOnNcbi && i == (stopIndexForFolder-1) && j == (stopIndexForFile + 1)) {
-                    break;
-                }
-
-                softFileName = softFileDownloader.downloadAndExtractSoftFile(i, j);
-
-                if (softFileName == null ) continue;
-
-                File file = new File(softFileName);
-
-                Series series = softFileParser.parse(file);
-                if (series != null)
-                    rnaSeqDao.insertRnaSeq(series);
-                else
-                    loggerSummary.error("Parse error : " + softFileName );
-
-                file.delete();
-
-            }
-            // set the j index(for file) to 0 after processing first folder
-            j = 0;
-        }
-        loggerSummary.info("DownloaderThread-" + threadNum + " => finished interval folders: " + startIndexForFolder +
-                "-" + stopIndexForFolder + ", start stop files: " + startIndexForFile + "-" + stopIndexForFile +
-                ", time: " + Calendar.getInstance().getTime());
-    }*/
 
     public void run() {
         loggerSummary.info("DownloaderThread-" + threadNum + " => started interval folders: " + startIndexForFolder +
@@ -94,11 +51,11 @@ public class DownloaderThread implements Runnable {
                 continue;
             }
 
-            for (int j=0; j < fileAccIds.length; j++) {
+            for (String fileAccId : fileAccIds) {
 
-                softFileName = softFileDownloader.downloadAndExtractSoftFile(directoryName, fileAccIds[j]);
+                softFileName = softFileDownloader.downloadAndExtractSoftFile(directoryName, fileAccId);
 
-                if (softFileName == null ) continue;
+                if (softFileName == null) continue;
 
                 File file = new File(softFileName);
 
@@ -106,7 +63,7 @@ public class DownloaderThread implements Runnable {
                 if (series != null)
                     rnaSeqDao.insertRnaSeq(series);
                 else
-                    loggerSummary.error("Parse error : " + softFileName );
+                    loggerSummary.error("Parse error : " + softFileName);
 
                 file.delete();
 

@@ -1,12 +1,12 @@
 package edu.mcw.rgd.RNASeqPipeline;
 
+import edu.mcw.rgd.dao.AbstractDAO;
 import org.springframework.jdbc.object.MappingSqlQuery;
 
 import javax.sql.DataSource;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-
-//import org.springframework.jdbc.core.JdbcTemplate;
+import java.util.List;
 
 /**
  * Created by cdursun on 7/7/2017.
@@ -59,7 +59,8 @@ public class RnaSeqQuery  extends MappingSqlQuery {
         return rnaSeq;
     }
 
-
-
-
+    public static List<RnaSeq> execute(AbstractDAO dao, String sql, Object... params) throws Exception {
+        RnaSeqQuery q = new RnaSeqQuery(dao.getDataSource(), sql);
+        return dao.execute(q, params);
+    }
 }
