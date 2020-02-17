@@ -25,23 +25,16 @@ public class RnaSeqDAO extends AbstractDAO {
     private String ontTermExactSynonymType;
     private String cellOntId;
     private String ratStrainsOntId;
-    private List<String> gseIds;
+ 
 
     public List<RnaSeq> getDataForGSE(String gseAccId) throws Exception {
         String sql = "SELECT * FROM rna_seq WHERE geo_accession_id=?";
         return RnaSeqQuery.execute(this, sql, gseAccId);
     }
-    public List<String> getLoadedGSE() throws Exception {
-        if(gseIds.size() == 0) {
-            String sql = "SELECT distinct(geo_accession_id) FROM rna_seq";
-            gseIds = StringListQuery.execute(this, sql);
-        }
-        return gseIds;
-    }
+
     public void insertRnaSeq(Series series){
         try {
-            List<String> loaded = getLoadedGSE();
-            if(!loaded.contains(series.getGeoAccessionID())) {
+
                 String platformTechnology = "";
 
                 if (series.getPlatformList().size() != 0)
@@ -109,10 +102,10 @@ public class RnaSeqDAO extends AbstractDAO {
                         }
                     }
                 }
-            }
+
         }
         catch(Exception e){
-            loggerSummary.error("RnaSeqDAO.insertRnaSeq() : " + e);
+            loggerSummary.error("RnaSeqDAO.insertRnaSeq() : " + e.getMessage());
         }
     }
 
