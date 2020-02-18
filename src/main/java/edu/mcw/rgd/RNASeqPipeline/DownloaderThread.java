@@ -4,7 +4,9 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
 import java.io.File;
+import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.List;
 
 /**
  * Created by cdursun on 7/24/2017.
@@ -36,7 +38,8 @@ public class DownloaderThread implements Runnable {
         loggerSummary.info("DownloaderThread-" + threadNum + " => started interval folders: " + startIndexForFolder +
                 "-" + stopIndexForFolder + ", time: " + Calendar.getInstance().getTime());
 
-
+        System.out.println("DownloaderThread-" + threadNum + " => started interval folders: " + startIndexForFolder +
+                "-" + stopIndexForFolder + ", time: " + Calendar.getInstance().getTime());
         String softFileName;
         for (int i = startIndexForFolder; i < stopIndexForFolder; i++) {
 
@@ -44,29 +47,34 @@ public class DownloaderThread implements Runnable {
 
             softFileDownloader.setExternalFile( SoftFileDownloader.getGeoSoftFilesFtpLink()+ directoryName);
             String[] fileAccIds = null;
+            List<String> existingIds = new ArrayList<>();
             try {
                 fileAccIds = softFileDownloader.listFiles();
+                existingIds = rnaSeqDao.getGeoIds("GSE"+i+"%");
+                System.out.println(fileAccIds);
+
             } catch (Exception e) {
                 loggerSummary.error("Directory list error : Skipping directory " + softFileDownloader.getExternalFile() );
                 continue;
             }
 
+
             for (String fileAccId : fileAccIds) {
+                if(!existingIds.contains(fileAccId)) {
+                    softFileName = softFileDownloader.downloadAndExtractSoftFile(directoryName, fileAccId);
+                    System.out.println(softFileName);
+                    if (softFileName == null) continue;
 
-                softFileName = softFileDownloader.downloadAndExtractSoftFile(directoryName, fileAccId);
+                    File file = new File(softFileName);
 
-                if (softFileName == null) continue;
+                    Series series = softFileParser.parse(file);
+                    if (series != null)
+                        rnaSeqDao.insertRnaSeq(series);
+                    else
+                        loggerSummary.error("Parse error : " + softFileName);
 
-                File file = new File(softFileName);
-
-                Series series = softFileParser.parse(file);
-                if (series != null)
-                    rnaSeqDao.insertRnaSeq(series);
-                else
-                    loggerSummary.error("Parse error : " + softFileName);
-
-                file.delete();
-
+                    file.delete();
+                }
             }
         }
         loggerSummary.info("DownloaderThread-" + threadNum + " => finished interval folders: " + startIndexForFolder +

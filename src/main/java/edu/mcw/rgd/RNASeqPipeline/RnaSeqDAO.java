@@ -25,13 +25,16 @@ public class RnaSeqDAO extends AbstractDAO {
     private String ontTermExactSynonymType;
     private String cellOntId;
     private String ratStrainsOntId;
- 
+
 
     public List<RnaSeq> getDataForGSE(String gseAccId) throws Exception {
         String sql = "SELECT * FROM rna_seq WHERE geo_accession_id=?";
         return RnaSeqQuery.execute(this, sql, gseAccId);
     }
-
+    public List<String> getGeoIds(String gseAccId) throws Exception {
+        String sql = "SELECT distinct(geo_accession_id) FROM rna_seq WHERE geo_accession_id like ?";
+        return StringListQuery.execute(this, sql, gseAccId);
+    }
     public void insertRnaSeq(Series series){
         try {
 
