@@ -5,6 +5,7 @@ package edu.mcw.rgd.RNASeqPipeline;
  */
 
 import edu.mcw.rgd.dao.AbstractDAO;
+import edu.mcw.rgd.dao.spring.StringListQuery;
 import edu.mcw.rgd.process.Utils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -25,83 +26,89 @@ public class RnaSeqDAO extends AbstractDAO {
     private String cellOntId;
     private String ratStrainsOntId;
 
+
     public List<RnaSeq> getDataForGSE(String gseAccId) throws Exception {
         String sql = "SELECT * FROM rna_seq WHERE geo_accession_id=?";
         return RnaSeqQuery.execute(this, sql, gseAccId);
     }
-
+    public List<String> getGeoIds(String gseAccId) throws Exception {
+        String sql = "SELECT distinct(geo_accession_id) FROM rna_seq WHERE geo_accession_id like ?";
+        return StringListQuery.execute(this, sql, gseAccId);
+    }
     public void insertRnaSeq(Series series){
         try {
-            String platformTechnology = "";
 
-            if (series.getPlatformList().size() != 0)
-                platformTechnology = series.getPlatformList().get(0).getTechnology();
+                String platformTechnology = "";
 
-            boolean isDublicateLogged = false;
-            for (int i = 0; i < series.getSampleList().size(); i++) {
-                Sample sample = series.getSampleList().get(i);
-                String sql = "INSERT INTO DEV_1.RNA_SEQ ( KEY, GEO_ACCESSION_ID, STUDY_TITLE, SUBMISSION_DATE, PUBMED_ID, SUMMARY, OVERALL_DESIGN, PLATFORM_ID, " +
-                        "PLATFORM_NAME, PLATFORM_TECHNOLOGY, TOTAL_NUMBER_OF_SAMPLES, NUMBER_OF_RAT_SAMPLES, STUDY_RELATION, CONTRIBUTORS, SAMPLE_ACCESSION_ID, " +
-                        "SAMPLE_TITLE, SAMPLE_ORGANISM, SAMPLE_SOURCE, SAMPLE_CHARACTERISTICS, SAMPLE_STRAIN, SAMPLE_AGE, SAMPLE_GENDER, SAMPLE_TISSUE, " +
-                        "SAMPLE_CELL_TYPE, SAMPLE_CELL_LINE, SAMPLE_GROWTH_PROTOCOL, SAMPLE_EXTRACT_PROTOCOL, SAMPLE_TREATMENT_PROTOCOL, SAMPLE_DATA_PROCESSING, " +
-                        "SAMPLE_SUPPLEMENTARY_FILES, SAMPLE_RELATION, SUPPLEMENTARY_FILES ) " +
-                        "VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?, ?)";
+                if (series.getPlatformList().size() != 0)
+                    platformTechnology = series.getPlatformList().get(0).getTechnology();
 
-                int key = this.getNextKey("GEO_SEQ");
+                boolean isDublicateLogged = false;
+                for (int i = 0; i < series.getSampleList().size(); i++) {
+                    Sample sample = series.getSampleList().get(i);
+                    String sql = "INSERT INTO DEV_1.RNA_SEQ ( KEY, GEO_ACCESSION_ID, STUDY_TITLE, SUBMISSION_DATE, PUBMED_ID, SUMMARY, OVERALL_DESIGN, PLATFORM_ID, " +
+                            "PLATFORM_NAME, PLATFORM_TECHNOLOGY, TOTAL_NUMBER_OF_SAMPLES, NUMBER_OF_RAT_SAMPLES, STUDY_RELATION, CONTRIBUTORS, SAMPLE_ACCESSION_ID, " +
+                            "SAMPLE_TITLE, SAMPLE_ORGANISM, SAMPLE_SOURCE, SAMPLE_CHARACTERISTICS, SAMPLE_STRAIN, SAMPLE_AGE, SAMPLE_GENDER, SAMPLE_TISSUE, " +
+                            "SAMPLE_CELL_TYPE, SAMPLE_CELL_LINE, SAMPLE_GROWTH_PROTOCOL, SAMPLE_EXTRACT_PROTOCOL, SAMPLE_TREATMENT_PROTOCOL, SAMPLE_DATA_PROCESSING, " +
+                            "SAMPLE_SUPPLEMENTARY_FILES, SAMPLE_RELATION, SUPPLEMENTARY_FILES ) " +
+                            "VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?, ?)";
 
-                Object[] array = new Object[]{
-                        Integer.valueOf(key),                                       /*0*/
-                        series.getGeoAccessionID(),                                      /*1*/
-                        series.getTitle(),                                               /*2*/
-                        series.getSubmissionDate(),                                      /*3*/
-                        series.getPubmedID(),                                            /*4*/
-                        series.getSummary(),                                             /*5*/
-                        series.getOverallDesign().getStoreStr().replace("||||", "||"),   /*6*/
-                        series.getPlatformID(),                                          /*7*/
-                        series.findPlatformName(sample.getPlatformID()),                 /*8*/
-                        platformTechnology,                                         /*9*/
-                        series.getSampleID().getStoreLength(),                           /*10*/
-                        series.getNumRatSamples(),                                  /*11*/
-                        series.getRelation().getStoreStr(),                              /*12*/
-                        series.getContributor().getStoreStr(),                           /*13*/
-                        sample.getGeoAccessionID(),                                      /*14*/
-                        sample.getTitle(),                                               /*15*/
-                        sample.getOrganism_ch1(),                                        /*16*/
-                        sample.getSourceName_ch1(),                                      /*17*/
-                        sample.getCharacteristics_ch1().getStoreStr(),                   /*18*/
-                        sample.getStrain(),                                              /*19*/
-                        sample.getAge(),                                                 /*20*/
-                        sample.getGender(),                                             /*21*/
-                        sample.getTissue(),                                             /*22*/
-                        sample.getCellType(),                                           /*23*/
-                        sample.getCellLine(),                                           /*24*/
-                        sample.getGrowthProtocol_ch1().getStoreStr(),                    /*25*/
-                        sample.getExtractProtocol_ch1().getStoreStr(),                   /*26*/
-                        sample.getTreatmentProtocol_ch1(),                               /*27*/
-                        sample.getDataProcessing().getStoreStr(),                        /*28*/
-                        sample.getSupplementaryFile().getStoreStr(),                     /*29*/
-                        sample.getRelation().getStoreStr(),                              /*30*/
-                        series.getSupplementaryFile().getStoreStr()                      /*31*/
-                };
-                loggerColumnSize.info("----------------------------- " + series.getGeoAccessionID() + " --------------------------------------------------");
-                for (int j = 0; j < array.length; j++) {
-                    loggerColumnSize.info(j + " : " + (array[j] == null ? null : array[j].getClass() == String.class ? ((String) array[j]).length() : "int"));
-                }
-                loggerColumnSize.info("-------------------------------------------------------------------------------");
-                try {
-                    this.update(sql, array);
-                } catch (DuplicateKeyException dke) {
-                    // because of download indexes sometimes the same file could be inserted
-                    // just log per file (not for all sample records in the series file) and ignore it
-                    if (!isDublicateLogged) { // in order to log per file
-                        loggerDublicate.info(series.getGeoAccessionID());
-                        isDublicateLogged = true;
+                    int key = this.getNextKey("GEO_SEQ");
+
+                    Object[] array = new Object[]{
+                            Integer.valueOf(key),                                       /*0*/
+                            series.getGeoAccessionID(),                                      /*1*/
+                            series.getTitle(),                                               /*2*/
+                            series.getSubmissionDate(),                                      /*3*/
+                            series.getPubmedID(),                                            /*4*/
+                            series.getSummary(),                                             /*5*/
+                            series.getOverallDesign().getStoreStr().replace("||||", "||"),   /*6*/
+                            series.getPlatformID(),                                          /*7*/
+                            series.findPlatformName(sample.getPlatformID()),                 /*8*/
+                            platformTechnology,                                         /*9*/
+                            series.getSampleID().getStoreLength(),                           /*10*/
+                            series.getNumRatSamples(),                                  /*11*/
+                            series.getRelation().getStoreStr(),                              /*12*/
+                            series.getContributor().getStoreStr(),                           /*13*/
+                            sample.getGeoAccessionID(),                                      /*14*/
+                            sample.getTitle(),                                               /*15*/
+                            sample.getOrganism_ch1(),                                        /*16*/
+                            sample.getSourceName_ch1(),                                      /*17*/
+                            sample.getCharacteristics_ch1().getStoreStr(),                   /*18*/
+                            sample.getStrain(),                                              /*19*/
+                            sample.getAge(),                                                 /*20*/
+                            sample.getGender(),                                             /*21*/
+                            sample.getTissue(),                                             /*22*/
+                            sample.getCellType(),                                           /*23*/
+                            sample.getCellLine(),                                           /*24*/
+                            sample.getGrowthProtocol_ch1().getStoreStr(),                    /*25*/
+                            sample.getExtractProtocol_ch1().getStoreStr(),                   /*26*/
+                            sample.getTreatmentProtocol_ch1(),                               /*27*/
+                            sample.getDataProcessing().getStoreStr(),                        /*28*/
+                            sample.getSupplementaryFile().getStoreStr(),                     /*29*/
+                            sample.getRelation().getStoreStr(),                              /*30*/
+                            series.getSupplementaryFile().getStoreStr()                      /*31*/
+                    };
+                    loggerColumnSize.info("----------------------------- " + series.getGeoAccessionID() + " --------------------------------------------------");
+                    for (int j = 0; j < array.length; j++) {
+                        loggerColumnSize.info(j + " : " + (array[j] == null ? null : array[j].getClass() == String.class ? ((String) array[j]).length() : "int"));
+                    }
+                    loggerColumnSize.info("-------------------------------------------------------------------------------");
+                    try {
+                        this.update(sql, array);
+                    } catch (DuplicateKeyException dke) {
+                        // because of download indexes sometimes the same file could be inserted
+                        // just log per file (not for all sample records in the series file) and ignore it
+                        if (!isDublicateLogged) { // in order to log per file
+                            loggerDublicate.info(series.getGeoAccessionID());
+                            isDublicateLogged = true;
+                        }
                     }
                 }
-            }
+
         }
         catch(Exception e){
-            loggerSummary.error("RnaSeqDAO.insertRnaSeq() : " + e);
+            loggerSummary.error("RnaSeqDAO.insertRnaSeq() : " + e.getMessage());
         }
     }
 
