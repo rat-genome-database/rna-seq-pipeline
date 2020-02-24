@@ -46,7 +46,7 @@ public class RnaSeqDAO extends AbstractDAO {
                 boolean isDublicateLogged = false;
                 for (int i = 0; i < series.getSampleList().size(); i++) {
                     Sample sample = series.getSampleList().get(i);
-                    String sql = "INSERT INTO DEV_1.RNA_SEQ ( KEY, GEO_ACCESSION_ID, STUDY_TITLE, SUBMISSION_DATE, PUBMED_ID, SUMMARY, OVERALL_DESIGN, PLATFORM_ID, " +
+                    String sql = "INSERT INTO RNA_SEQ ( KEY, GEO_ACCESSION_ID, STUDY_TITLE, SUBMISSION_DATE, PUBMED_ID, SUMMARY, OVERALL_DESIGN, PLATFORM_ID, " +
                             "PLATFORM_NAME, PLATFORM_TECHNOLOGY, TOTAL_NUMBER_OF_SAMPLES, NUMBER_OF_RAT_SAMPLES, STUDY_RELATION, CONTRIBUTORS, SAMPLE_ACCESSION_ID, " +
                             "SAMPLE_TITLE, SAMPLE_ORGANISM, SAMPLE_SOURCE, SAMPLE_CHARACTERISTICS, SAMPLE_STRAIN, SAMPLE_AGE, SAMPLE_GENDER, SAMPLE_TISSUE, " +
                             "SAMPLE_CELL_TYPE, SAMPLE_CELL_LINE, SAMPLE_GROWTH_PROTOCOL, SAMPLE_EXTRACT_PROTOCOL, SAMPLE_TREATMENT_PROTOCOL, SAMPLE_DATA_PROCESSING, " +
@@ -215,7 +215,8 @@ public class RnaSeqDAO extends AbstractDAO {
                     "from rna_seq where (LOWER(sample_organism)='rattus norvegicus' or LOWER(sample_organism)='homo sapiens' " +
                     "or LOWER(sample_organism)='mus musculus' \n" +
                     "or LOWER(sample_organism)='chinchilla lanigera' or LOWER(sample_organism)='pan paniscus' or LOWER(sample_organism)='canis lupus familiaris'\n" +
-                    "or LOWER(sample_organism)='ictidomys tridecemlineatus' or LOWER(sample_organism)='danio rerio')"; //
+                    "or LOWER(sample_organism)='ictidomys tridecemlineatus' or LOWER(sample_organism)='danio rerio')" +
+                    "and geo_accession_id not in ('GSE50027','GSE53960')"; //
 
             PreparedStatement ps = conn.prepareStatement(sql);
             ResultSet rs = ps.executeQuery();
