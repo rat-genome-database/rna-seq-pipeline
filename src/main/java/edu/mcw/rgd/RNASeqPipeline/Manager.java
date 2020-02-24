@@ -31,7 +31,7 @@ public class Manager {
     private int numberOfFilesPerFolderOnNcbi;
     private byte downloaderMaxRetryCount;
     private byte downloaderDownloadRetryIntervalInSeconds;
-    private byte indexOfStartFolderForDownload;
+    private int indexOfStartFolderForDownload;
     private boolean performDownload;
     private boolean performMapping;
     private String ncbiSoftFilesFtpLink;
@@ -98,7 +98,7 @@ public class Manager {
         ExecutorService executor = Executors.newFixedThreadPool(numberOfDownloaderThreads);
 
         final int offset = (indexOfStopFolderForDownload - indexOfStartFolderForDownload) / numberOfDownloaderThreads;
-
+        System.out.println(offset);
         for (int i = 0; i < numberOfDownloaderThreads ; i++) {
             final int folderStartIndex = i * offset + indexOfStartFolderForDownload;
             int folderStopIndex = folderStartIndex + offset;
@@ -106,7 +106,7 @@ public class Manager {
             if (i == (numberOfDownloaderThreads - 1)) //set stop folder index for last thread
                 folderStopIndex = indexOfStopFolderForDownload;
 
-
+            System.out.println("Starting thread "+ i);
             DownloaderThread thread = new DownloaderThread(i, new SoftFileDownloader(downloaderMaxRetryCount,
                     downloaderDownloadRetryIntervalInSeconds), new SoftFileParser(), new RnaSeqDAO(),
                     numberOfFilesPerFolderOnNcbi, folderStartIndex, folderStopIndex);
@@ -225,11 +225,11 @@ public class Manager {
         return downloaderDownloadRetryIntervalInSeconds;
     }
 
-    public void setIndexOfStartFolderForDownload(byte indexOfStartFolderForDownload) {
+    public void setIndexOfStartFolderForDownload(int indexOfStartFolderForDownload) {
         this.indexOfStartFolderForDownload = indexOfStartFolderForDownload;
     }
 
-    public byte getIndexOfStartFolderForDownload() {
+    public int getIndexOfStartFolderForDownload() {
         return indexOfStartFolderForDownload;
     }
 
