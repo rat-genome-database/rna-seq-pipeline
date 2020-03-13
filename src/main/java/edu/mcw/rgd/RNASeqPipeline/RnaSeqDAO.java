@@ -5,15 +5,26 @@ package edu.mcw.rgd.RNASeqPipeline;
  */
 
 import edu.mcw.rgd.dao.AbstractDAO;
-import edu.mcw.rgd.dao.spring.StringListQuery;
+import edu.mcw.rgd.dao.impl.GeneExpressionDAO;
+import edu.mcw.rgd.dao.impl.OntologyXDAO;
+import edu.mcw.rgd.dao.impl.XdbIdDAO;
+import edu.mcw.rgd.dao.spring.*;
+import edu.mcw.rgd.datamodel.Gene;
+import edu.mcw.rgd.datamodel.ontologyx.Term;
+import edu.mcw.rgd.datamodel.pheno.Condition;
+import edu.mcw.rgd.datamodel.pheno.Experiment;
+import edu.mcw.rgd.datamodel.pheno.GeneExpressionRecord;
+import edu.mcw.rgd.datamodel.pheno.GeneExpressionRecordValue;
 import edu.mcw.rgd.process.Utils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.dao.DuplicateKeyException;
+import org.springframework.jdbc.object.BatchSqlUpdate;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
+import java.sql.Types;
 import java.util.*;
 
 public class RnaSeqDAO extends AbstractDAO {
@@ -26,6 +37,9 @@ public class RnaSeqDAO extends AbstractDAO {
     private String cellOntId;
     private String ratStrainsOntId;
 
+    private OntologyXDAO odao = new OntologyXDAO();
+    GeneExpressionDAO gedao = new GeneExpressionDAO();
+    XdbIdDAO xdbIdDAO = new XdbIdDAO();
 
     public List<RnaSeq> getDataForGSE(String gseAccId) throws Exception {
         String sql = "SELECT * FROM rna_seq WHERE geo_accession_id=?";
@@ -212,11 +226,12 @@ public class RnaSeqDAO extends AbstractDAO {
         try {
             conn =  this.getConnection();
             String sql = "select KEY,SAMPLE_TISSUE, SAMPLE_STRAIN, SAMPLE_CELL_LINE, SAMPLE_CELL_TYPE, RGD_TISSUE_TERM_ACC, RGD_CELL_TERM_ACC, RGD_STRAIN_TERM_ACC, RGD_STRAIN_RGD_ID " +
-                    "from rna_seq where (LOWER(sample_organism)='rattus norvegicus' or LOWER(sample_organism)='homo sapiens' " +
-                    "or LOWER(sample_organism)='mus musculus' \n" +
-                    "or LOWER(sample_organism)='chinchilla lanigera' or LOWER(sample_organism)='pan paniscus' or LOWER(sample_organism)='canis lupus familiaris'\n" +
-                    "or LOWER(sample_organism)='ictidomys tridecemlineatus' or LOWER(sample_organism)='danio rerio')" +
-                    "and geo_accession_id not in ('GSE50027','GSE53960')"; //
+                    "from rna_seq where (LOWER(sample_organism)='rattus norvegicus') " +
+                //    "or LOWER(sample_organism)='homo sapiens' " +
+                //    "or LOWER(sample_organism)='mus musculus' \n" +
+                //    "or LOWER(sample_organism)='chinchilla lanigera' or LOWER(sample_organism)='pan paniscus' or LOWER(sample_organism)='canis lupus familiaris'\n" +
+                //    "or LOWER(sample_organism)='ictidomys tridecemlineatus' or LOWER(sample_organism)='danio rerio')" +
+                    "and key > 2632446"; //
 
             PreparedStatement ps = conn.prepareStatement(sql);
             ResultSet rs = ps.executeQuery();
@@ -344,9 +359,134 @@ public class RnaSeqDAO extends AbstractDAO {
         update(sql, oa);
 
     }
+    public edu.mcw.rgd.datamodel.pheno.Sample getSample(edu.mcw.rgd.datamodel.pheno.Sample sample) throws Exception{
+        String sql = "Select * from Sample where number_of_animals = "+sample.getNumberOfAnimals()+" and strain_ont_id";
 
+
+        if(sample.getStrainAccId() != null)
+            sql += "= '"+sample.getStrainAccId()+"'";
+        else sql += " is null";
+
+        if(sample.getTissueAccId() != null)
+            sql += " and tissue_ont_id = '"+sample.getTissueAccId()+ "'";
+        else sql += " and tissue_ont_id is null";
+
+        if(sample.getCellTypeAccId() != null)
+            sql += " and cell_type_ont_id = '"+sample.getCellTypeAccId()+"'";
+        else sql += " and cell_type_ont_id is null";
+
+
+        if(sample.getSex() != null)
+            sql += " and sex='" + sample.getSex() + "'";
+        else sql += " and sex is null";
+
+        if(sample.getAgeDaysFromHighBound() != null)
+            sql += " and age_days_from_dob_high_bound = "+sample.getAgeDaysFromHighBound();
+        else sql += " and age_days_from_dob_high_bound is null";
+
+        if(sample.getAgeDaysFromLowBound() != null)
+            sql += " and age_days_from_dob_low_bound = "+sample.getAgeDaysFromLowBound();
+        else sql += " and age_days_from_dob_high_bound is null";
+
+        if(sample.getNotes() != null && !sample.getNotes().isEmpty()) {
+            String notes = sample.getNotes();
+            notes = notes.replaceAll("'","''");
+            sql += " and dbms_lob.compare(sample_notes, '" + notes + "') = 0";
+        }
+
+
+        PhenoSampleQuery sq = new PhenoSampleQuery(this.getDataSource(), sql);
+
+
+        System.out.println(sql);
+
+        List<edu.mcw.rgd.datamodel.pheno.Sample> samples = sq.execute();
+        if(samples == null || samples.isEmpty())
+            return null;
+        else return samples.get(0);
+    }
+    public edu.mcw.rgd.datamodel.pheno.Sample getSampleFromBioSampleId(edu.mcw.rgd.datamodel.pheno.Sample sample) throws Exception{
+        String sql = "Select * from Sample where biosample_id like '%"+sample.getBioSampleId()+"%'";
+
+
+        System.out.println(sql);
+        PhenoSampleQuery sq = new PhenoSampleQuery(this.getDataSource(), sql);
+        List<edu.mcw.rgd.datamodel.pheno.Sample> samples = sq.execute();
+        if(samples == null || samples.isEmpty())
+            return null;
+        else return samples.get(0);
+    }
+    public int getExperimentId(Experiment e) throws Exception{
+
+        String sql = "Select * from Experiment where experiment_name='"+e.getName()+"' and study_id="+e.getStudyId();
+
+        if(e.getTraitOntId() != null)
+            sql += " and trait_ont_id='"+e.getTraitOntId()+"'";
+        else sql += " and trait_ont_id is null";
+
+        System.out.println(sql);
+        ExperimentQuery sq = new ExperimentQuery(this.getDataSource(), sql);
+        List<Experiment> experiments = sq.execute();
+        if(experiments == null || experiments.isEmpty())
+            return 0;
+        else return experiments.get(0).getId();
+    }
+    public int getGeneExprRecordId(GeneExpressionRecord g) throws Exception{
+
+        String sql = "Select * from Gene_expression_exp_record where experiment_id="+g.getExperimentId()+" and sample_id="+g.getSampleId()+" and species_type_key="+g.getSpeciesTypeKey();
+        GeneExpressionRecordQuery sq = new GeneExpressionRecordQuery(this.getDataSource(), sql);
+        List<GeneExpressionRecord> records = sq.execute();
+        if(records == null || records.isEmpty())
+            return 0;
+        else return records.get(0).getId();
+    }
     public void setCrossSpeciesAnatomyOntId(String crossSpeciesAnatomyOntId) {
         this.crossSpeciesAnatomyOntId = crossSpeciesAnatomyOntId;
+    }
+    public void insertGeneExpressionRecordValues(List<GeneExpressionRecordValue> records) throws Exception{
+        String sql = "INSERT INTO gene_expression_values (gene_expression_value_id, expressed_object_rgd_id"
+                +",expression_measurement_ont_id, expression_value_notes, gene_expression_exp_record_id"
+                +",expression_value, expression_unit, map_key,expression_level) VALUES(?,?,?,?,?,?,?,?,?)";
+        BatchSqlUpdate su = new BatchSqlUpdate(this.getDataSource(), sql, new int[]{Types.VARCHAR, Types.INTEGER,
+                Types.VARCHAR, Types.VARCHAR,Types.INTEGER, Types.DOUBLE, Types.VARCHAR, Types.INTEGER,Types.VARCHAR },10000);
+        su.compile();
+
+        for(GeneExpressionRecordValue v:records) {
+            int id = getNextKeyFromSequence("gene_expression_values_seq");
+            v.setId(id);
+            if(v.getExpressionValue() < 0.5)
+                v.setExpressionLevel("below cutoff");
+            else if(v.getExpressionValue() >= 0.5 && v.getExpressionValue() < 11)
+                v.setExpressionLevel("low");
+            else if(v.getExpressionValue() >= 11 && v.getExpressionValue() < 1000)
+                v.setExpressionLevel("medium");
+            else v.setExpressionLevel("high");
+            su.update(id, v.getExpressedObjectRgdId(), v.getExpressionMeasurementAccId(), v.getNotes(),
+                    v.getGeneExpressionRecordId(), v.getExpressionValue(), v.getExpressionUnit(), v.getMapKey(),v.getExpressionLevel());
+        }
+        su.flush();
+    }
+    public void updateBioSampleId(int sampleId, edu.mcw.rgd.datamodel.pheno.Sample sample) throws Exception{
+
+        edu.mcw.rgd.datamodel.pheno.Sample s = getSample(sample);
+        String sql;
+        if(s.getBioSampleId() != null) {
+            sql  = "update Sample set biosample_id = '" + s.getBioSampleId() + ";" + sample.getBioSampleId() + "' where sample_id = " + sampleId;
+        } else sql = "update Sample set biosample_id = '" + sample.getBioSampleId() + "' where sample_id = " + sampleId;
+        this.update(sql);
+
+    }
+    public String getTermByTermName(String term,String ontID) throws Exception {
+        Term t =  odao.getTermByTermName(term,ontID);
+        if(t != null)
+            return t.getAccId();
+        else return null;
+    }
+    public int getRGDIdsByXdbId(int xdbKey, String ensembleId) throws Exception{
+        List<Gene> genes = xdbIdDAO.getActiveGenesByXdbId(xdbKey,ensembleId);
+        if(genes == null || genes.isEmpty())
+            return 0;
+        else return genes.get(0).getRgdId();
     }
 
     public String getCrossSpeciesAnatomyOntId() {
