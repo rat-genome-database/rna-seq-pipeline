@@ -140,7 +140,7 @@ public class GSE125483 {
                         sex = "Male";
                     else sex = "Female";
                     header = header.concat(sex).concat("_").concat(part).concat("_").concat(sampleTitle);
-                    System.out.println(header);
+                    //System.out.println(header);
                     geneExpressionRecordMap.put(header, geneExprRecId);
 
                 }
@@ -436,7 +436,6 @@ public class GSE125483 {
                                 String s = null;
                                 if (i != 0 ) {
                                     s = samples.get(j);
-                                    System.out.println(s + "," + j);
                                     GeneExpressionRecordValue rec = new GeneExpressionRecordValue();
                                     rec.setExpressedObjectRgdId(rgdId);
 
