@@ -49,8 +49,8 @@ public class RnaSeqQuery  extends MappingSqlQuery {
         rnaSeq.setSampleStrain(rs.getString("SAMPLE_STRAIN"));
         rnaSeq.setSampleCellLine(rs.getString("SAMPLE_CELL_LINE"));
         rnaSeq.setSampleGrowthProtocol(rs.getString("SAMPLE_GROWTH_PROTOCOL"));
-        rnaSeq.setSampleTissue(rs.getString("STUDY_RELATION"));
-        rnaSeq.setStudyRelation(rs.getString("SAMPLE_TISSUE"));
+        rnaSeq.setStudyRelation(rs.getString("STUDY_RELATION"));
+        rnaSeq.setSampleTissue(rs.getString("SAMPLE_TISSUE"));
         rnaSeq.setRgdTissueTermAcc(rs.getString("RGD_TISSUE_TERM_ACC"));
         rnaSeq.setRgdCellTermAcc(rs.getString("RGD_CELL_TERM_ACC"));
         rnaSeq.setRgdStrainTermAcc(rs.getString("RGD_STRAIN_TERM_ACC"));

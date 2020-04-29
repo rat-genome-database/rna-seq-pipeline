@@ -48,34 +48,33 @@ public class DownloaderThread implements Runnable {
             softFileDownloader.setExternalFile( SoftFileDownloader.getGeoSoftFilesFtpLink()+ directoryName);
             String[] fileAccIds = null;
             List<String> existingIds = new ArrayList<>();
+            List<String> loaded = new ArrayList<>();
             try {
                 fileAccIds = softFileDownloader.listFiles();
                 existingIds = rnaSeqDao.getGeoIds("GSE"+i+"%");
-                System.out.println(fileAccIds);
-
             } catch (Exception e) {
                 loggerSummary.error("Directory list error : Skipping directory " + softFileDownloader.getExternalFile() );
                 continue;
             }
 
-
             for (String fileAccId : fileAccIds) {
                 if(!existingIds.contains(fileAccId)) {
+                    loaded.add(fileAccId);
                     softFileName = softFileDownloader.downloadAndExtractSoftFile(directoryName, fileAccId);
                     System.out.println(softFileName);
                     if (softFileName == null) continue;
-
                     File file = new File(softFileName);
-
                     Series series = softFileParser.parse(file);
                     if (series != null)
                         rnaSeqDao.insertRnaSeq(series);
                     else
                         loggerSummary.error("Parse error : " + softFileName);
-
                     file.delete();
+
+                    loggerSummary.info("Updated: "+series.getGeoAccessionID());
                 }
             }
+            loggerSummary.info("Loaded for folder " + directoryName+ " : "+ loaded.size());
         }
         loggerSummary.info("DownloaderThread-" + threadNum + " => finished interval folders: " + startIndexForFolder +
                 "-" + stopIndexForFolder + ", time: " + Calendar.getInstance().getTime());

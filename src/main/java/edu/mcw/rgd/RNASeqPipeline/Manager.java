@@ -45,7 +45,17 @@ public class Manager {
         manager.init(bf);
 
         Date time0 = Calendar.getInstance().getTime();
-
+        for( int i=0; i<args.length; i++ ) {
+            String arg = args[i];
+            switch (arg) {
+                case "--start":
+                    manager.indexOfStartFolderForDownload = Integer.parseInt(args[++i]);
+                    break;
+                case "--stop":
+                    manager.indexOfStopFolderForDownload = Integer.parseInt(args[++i]);
+                    break;
+            }
+        }
         try {
             manager.run(time0);
         } catch (Exception e) {
@@ -193,13 +203,6 @@ public class Manager {
         return numberOfDownloaderThreads;
     }
 
-    public void setIndexOfStopFolderForDownload(int indexOfStopFolderForDownload) {
-        this.indexOfStopFolderForDownload = indexOfStopFolderForDownload;
-    }
-
-    public int getIndexOfStopFolderForDownload() {
-        return indexOfStopFolderForDownload;
-    }
 
     public void setNumberOfFilesPerFolderOnNcbi(int numberOfFilesPerFolderOnNcbi) {
         this.numberOfFilesPerFolderOnNcbi = numberOfFilesPerFolderOnNcbi;
@@ -223,14 +226,6 @@ public class Manager {
 
     public byte getDownloaderDownloadRetryIntervalInSeconds() {
         return downloaderDownloadRetryIntervalInSeconds;
-    }
-
-    public void setIndexOfStartFolderForDownload(int indexOfStartFolderForDownload) {
-        this.indexOfStartFolderForDownload = indexOfStartFolderForDownload;
-    }
-
-    public int getIndexOfStartFolderForDownload() {
-        return indexOfStartFolderForDownload;
     }
 
     public void setPerformDownload(boolean performDownload) {
