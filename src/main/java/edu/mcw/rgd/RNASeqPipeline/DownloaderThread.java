@@ -47,7 +47,7 @@ public class DownloaderThread implements Runnable {
 
             softFileDownloader.setExternalFile( SoftFileDownloader.getGeoSoftFilesFtpLink()+ directoryName);
             String[] fileAccIds = null;
-            List<String> existingIds = new ArrayList<>();
+            List<String> existingIds;
             try {
                 fileAccIds = softFileDownloader.listFiles();
                 existingIds = rnaSeqDao.getGeoIds("GSE"+i+"%");
