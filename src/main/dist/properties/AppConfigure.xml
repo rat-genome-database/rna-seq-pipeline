@@ -1,7 +1,7 @@
 <!DOCTYPE beans PUBLIC "-//SPRING//DTD BEAN//EN" "http://www.springframework.org/dtd/spring-beans.dtd">
 <beans>
 	<bean id="main" class="edu.mcw.rgd.RNASeqPipeline.Manager">
-		<property name="version" value="RNASeq Pipeline v 1.0 as of May 19, 2017" />
+		<property name="version" value="RNASeq Pipeline -- build Jan 13, 2023" />
 		<property name="ncbiSoftFilesFtpLink" value="ftp://ftp.ncbi.nlm.nih.gov/geo/series/"/>
 		<property name="indexOfStartFolderForDownload" value="102"/> <!-- default is 0; applies to first thread only -->
 		<property name="indexOfStopFolderForDownload" value="103"/> <!-- applies to last thread only -->
