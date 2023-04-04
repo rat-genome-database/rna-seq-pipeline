@@ -18,5 +18,9 @@ LOG4J_OPTS="-Dlog4j.configurationFile=file://$APPDIR/properties/log4j2.xml"
 export RNA_SEQ_PIPELINE_OPTS="$DB_OPTS $LOG4J_OPTS"
 bin/$APPNAME "$@" 2>&1
 
+java -Dspring.config=$APPDIR/../properties/default_db.xml \
+    -Dlog4j.configuration=file://$APPDIR/properties/log4j.properties \
+    -jar lib/${APPNAME}.jar  "$@" 2>&1 > run.log
+
 mailx -s "[$SERVER] RNASeq Pipeline Summary" $EMAILLIST < $APPDIR/logs/summary.log
 

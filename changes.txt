@@ -1,2 +1,5 @@
+Jan 10, 2023
+  updated build.gradle to be gradle 6.x + compatible
+
 Dec 22, 2021
   updated log4j to avoid zero day exploit

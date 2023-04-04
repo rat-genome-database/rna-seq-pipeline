@@ -5,16 +5,7 @@ package edu.mcw.rgd.RNASeqPipeline;
  */
 
 import edu.mcw.rgd.dao.AbstractDAO;
-import edu.mcw.rgd.dao.impl.GeneExpressionDAO;
-import edu.mcw.rgd.dao.impl.OntologyXDAO;
-import edu.mcw.rgd.dao.impl.XdbIdDAO;
-import edu.mcw.rgd.dao.spring.*;
-import edu.mcw.rgd.datamodel.Gene;
-import edu.mcw.rgd.datamodel.ontologyx.Term;
-import edu.mcw.rgd.datamodel.pheno.Condition;
-import edu.mcw.rgd.datamodel.pheno.Experiment;
-import edu.mcw.rgd.datamodel.pheno.GeneExpressionRecord;
-import edu.mcw.rgd.datamodel.pheno.GeneExpressionRecordValue;
+import edu.mcw.rgd.dao.spring.StringListQuery;
 import edu.mcw.rgd.process.Utils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -226,12 +217,11 @@ public class RnaSeqDAO extends AbstractDAO {
         try {
             conn =  this.getConnection();
             String sql = "select KEY,SAMPLE_TISSUE, SAMPLE_STRAIN, SAMPLE_CELL_LINE, SAMPLE_CELL_TYPE, RGD_TISSUE_TERM_ACC, RGD_CELL_TERM_ACC, RGD_STRAIN_TERM_ACC, RGD_STRAIN_RGD_ID " +
-                    "from rna_seq where (LOWER(sample_organism)='rattus norvegicus') " +
-                //    "or LOWER(sample_organism)='homo sapiens' " +
-                //    "or LOWER(sample_organism)='mus musculus' \n" +
-                //    "or LOWER(sample_organism)='chinchilla lanigera' or LOWER(sample_organism)='pan paniscus' or LOWER(sample_organism)='canis lupus familiaris'\n" +
-                //    "or LOWER(sample_organism)='ictidomys tridecemlineatus' or LOWER(sample_organism)='danio rerio')" +
-                    "and key > 2632446"; //
+                    "from rna_seq where (LOWER(sample_organism)='rattus norvegicus' or LOWER(sample_organism)='homo sapiens' " +
+                    "or LOWER(sample_organism)='mus musculus' \n" +
+                    "or LOWER(sample_organism)='chinchilla lanigera' or LOWER(sample_organism)='pan paniscus' or LOWER(sample_organism)='canis lupus familiaris'\n" +
+                    "or LOWER(sample_organism)='ictidomys tridecemlineatus' or LOWER(sample_organism)='danio rerio')" +
+                    "and geo_accession_id not in ('GSE50027','GSE53960')"; //
 
             PreparedStatement ps = conn.prepareStatement(sql);
             ResultSet rs = ps.executeQuery();
