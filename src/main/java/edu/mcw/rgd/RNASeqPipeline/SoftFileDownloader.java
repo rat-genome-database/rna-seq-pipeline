@@ -1,8 +1,8 @@
 package edu.mcw.rgd.RNASeqPipeline;
 
 import edu.mcw.rgd.process.FileDownloader;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.apache.commons.net.ftp.FTPClient;
 import org.apache.commons.net.ftp.FTPFile;
 
@@ -20,14 +20,9 @@ public class SoftFileDownloader extends FileDownloader {
 
     private int numberOfEmptyFiles = 0;
     private int numberOfDownloadedFiles = 0;
-    private final static Log loggerDownloaded;
-    private final static Log loggerEmpty;
-    private final static Log loggerRgd;
-    static {
-        loggerDownloaded = LogFactory.getLog("downloaded");
-        loggerEmpty = LogFactory.getLog("empty");
-        loggerRgd = LogFactory.getLog("log_rgd");
-    }
+    private final static Logger loggerDownloaded = LogManager.getLogger("downloaded");
+    private final static Logger loggerEmpty = LogManager.getLogger("empty");
+    private final static Logger loggerRgd = LogManager.getLogger("log_rgd");
 
     public SoftFileDownloader(byte maxRetryCount, byte downloadRetryIntervalInSeconds){
         this.setMaxRetryCount(maxRetryCount);
@@ -35,10 +30,6 @@ public class SoftFileDownloader extends FileDownloader {
         this.setUseCompression(false);
     }
 
-    /*public String downloadAndExtractSoftFile(int i, int j) {
-        downloadSoftFile(i, j);
-        return extractDownlodedGzFile();
-    }*/
     public String downloadAndExtractSoftFile(String directory, String gseAccId) {
         downloadSoftFile(directory, gseAccId);
         return extractDownlodedGzFile();
@@ -74,8 +65,8 @@ public class SoftFileDownloader extends FileDownloader {
         setExternalFile(externalFileName);
         setLocalFile(DATA_DIRECTORY + gseAccId  + SOFT_FILE_SUFFIX);
         try {
-            download();
-            loggerDownloaded.info(gseAccId + SOFT_FILE_SUFFIX);
+            String localFile = download();
+            loggerDownloaded.info("downloaded: "+localFile);
             synchronized (this) {
                 numberOfDownloadedFiles++;
             }

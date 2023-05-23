@@ -5,8 +5,8 @@ import edu.mcw.rgd.dao.impl.StrainDAO;
 import edu.mcw.rgd.datamodel.Strain;
 import edu.mcw.rgd.datamodel.ontologyx.Term;
 import edu.mcw.rgd.datamodel.ontologyx.TermSynonym;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import java.util.*;
 
@@ -15,7 +15,7 @@ import java.util.*;
  */
 public class RnaSeqToRgdMapper{
 
-    private final static Log loggerSummary;
+    private final static Logger loggerSummary = LogManager.getLogger("summary");
     private String crossSpeciesAnatomyOntId;
     private String ontTermExactSynonymType;
 
@@ -40,10 +40,6 @@ public class RnaSeqToRgdMapper{
 
     private TabDelimetedTextParser tabDelimetedTextParser;
     private int numberOfMappingsAfterLemmatization = 0;
-
-    static {
-        loggerSummary = LogFactory.getLog("summary");
-    }
 
     private int dbConnectionCheckInterval;
 

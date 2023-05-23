@@ -1,2 +1,5 @@
+May 23, 2023
+  upgraded logging to log4j2
+
 Jan 10, 2023
   updated build.gradle to be gradle 6.x + compatible

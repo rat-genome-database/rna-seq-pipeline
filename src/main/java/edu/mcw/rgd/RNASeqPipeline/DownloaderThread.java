@@ -1,7 +1,7 @@
 package edu.mcw.rgd.RNASeqPipeline;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -12,7 +12,7 @@ import java.util.List;
  * Created by cdursun on 7/24/2017.
  */
 public class DownloaderThread implements Runnable {
-    private final static Log loggerSummary;
+    private final static Logger loggerSummary = LogManager.getLogger("summary");
     private int threadNum;
     private int startIndexForFolder;
     private int stopIndexForFolder;
@@ -20,9 +20,7 @@ public class DownloaderThread implements Runnable {
     private RnaSeqDAO rnaSeqDao;
     private SoftFileDownloader softFileDownloader;
     private SoftFileParser softFileParser;
-    static {
-        loggerSummary = LogFactory.getLog("summary");
-    }
+
     public DownloaderThread(int threadNum, SoftFileDownloader softFileDownloader, SoftFileParser softFileParser, RnaSeqDAO rnaSeqDao, int maxNumOfFilesPerFolderOnNcbi, int startIndexForFolder, int stopIndexForFolder){
         this.threadNum = threadNum;
         this.rnaSeqDao = rnaSeqDao;

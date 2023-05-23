@@ -4,15 +4,15 @@
 		<property name="version" value="RNASeq Pipeline -- build Jan 13, 2023" />
 		<property name="ncbiSoftFilesFtpLink" value="ftp://ftp.ncbi.nlm.nih.gov/geo/series/"/>
 		<property name="indexOfStartFolderForDownload" value="102"/> <!-- default is 0; applies to first thread only -->
-		<property name="indexOfStopFolderForDownload" value="103"/> <!-- applies to last thread only -->
+		<property name="indexOfStopFolderForDownload" value="104"/> <!-- applies to last thread only -->
 		<property name="numberOfFilesPerFolderOnNcbi" value="1000"/> <!-- 1000 -->
 		<property name="rnaSeqToRgdMapper" ref="rnaSeqToRgdMapper"/>
 		<property name="numberOfMapperThreads" value="10"/><!-- default is 10; so far best performance is got with 10 threads -->
 		<property name="numberOfDownloaderThreads" value="20"/>
 		<property name="downloaderMaxRetryCount" value="3"/><!-- at each try, downloader increases wait time by 2 times starting from intervalInSeconds -->
 		<property name="downloaderDownloadRetryIntervalInSeconds" value="5"/>
-		<property name="performDownload" value="false"/>
-		<property name="performMapping" value="true"/>
+		<property name="performDownload" value="true"/>
+		<property name="performMapping" value="false"/>
 	</bean>
 	<bean id="rnaSeqDao" class="edu.mcw.rgd.RNASeqPipeline.RnaSeqDAO">
 		<property name="crossSpeciesAnatomyOntId" value="UBERON"/>

@@ -1,7 +1,7 @@
 package edu.mcw.rgd.RNASeqPipeline;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import java.util.Calendar;
 
@@ -9,15 +9,12 @@ import java.util.Calendar;
  * Created by cdursun on 7/21/2017.
  */
 public class MapperThread implements Runnable {
-    private final static Log loggerSummary;
+    private final static Logger loggerSummary = LogManager.getLogger("summary");
     private int threadNum;
     private int startIndex;
     private int stopIndex;
     private RnaSeqToRgdMapper rnaSeqToRgdMapper;
 
-    static {
-        loggerSummary = LogFactory.getLog("summary");
-    }
     public MapperThread(int threadNum, RnaSeqToRgdMapper rnaSeqToRgdMapper, int startIndex, int stopIndex){
         this.threadNum = threadNum;
         this.startIndex = startIndex;

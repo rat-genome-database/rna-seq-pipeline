@@ -7,8 +7,8 @@ package edu.mcw.rgd.RNASeqPipeline;
 import edu.mcw.rgd.dao.AbstractDAO;
 import edu.mcw.rgd.dao.spring.StringListQuery;
 import edu.mcw.rgd.process.Utils;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.springframework.dao.DuplicateKeyException;
 
 import java.sql.Connection;
@@ -17,9 +17,9 @@ import java.sql.ResultSet;
 import java.util.*;
 
 public class RnaSeqDAO extends AbstractDAO {
-    private final Log loggerColumnSize = LogFactory.getLog("column_size");
-    private final Log loggerSummary = LogFactory.getLog("dublicate");
-    private final Log loggerDublicate = LogFactory.getLog("summary");
+    private final Logger loggerColumnSize = LogManager.getLogger("column_size");
+    private final Logger loggerSummary = LogManager.getLogger("summary");
+    private final Logger loggerDuplicate = LogManager.getLogger("duplicate");
 
     private String crossSpeciesAnatomyOntId;
     private String ontTermExactSynonymType;
@@ -100,7 +100,7 @@ public class RnaSeqDAO extends AbstractDAO {
                         // because of download indexes sometimes the same file could be inserted
                         // just log per file (not for all sample records in the series file) and ignore it
                         if (!isDublicateLogged) { // in order to log per file
-                            loggerDublicate.info(series.getGeoAccessionID());
+                            loggerDuplicate.info(series.getGeoAccessionID()+" "+sample.getGeoAccessionID());
                             isDublicateLogged = true;
                         }
                     }

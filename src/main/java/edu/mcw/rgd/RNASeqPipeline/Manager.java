@@ -1,8 +1,8 @@
 package edu.mcw.rgd.RNASeqPipeline;
 
 import edu.mcw.rgd.process.Utils;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.support.DefaultListableBeanFactory;
 import org.springframework.beans.factory.xml.XmlBeanDefinitionReader;
 import org.springframework.core.io.FileSystemResource;
@@ -18,11 +18,8 @@ import java.util.concurrent.TimeUnit;
  */
 public class Manager {
     private String version;
-    private final static Log loggerSummary;
+    private final static Logger loggerSummary = LogManager.getLogger("summary");
     private SoftFileDownloader softFileDownloader;
-    static {
-        loggerSummary = LogFactory.getLog("summary");
-    }
 
     private RnaSeqToRgdMapper rnaSeqToRgdMapper;
     private byte numberOfMapperThreads;
@@ -68,8 +65,13 @@ public class Manager {
 
     public void run(Date runDate) throws Exception {
 
-        if (performDownload)
-            downloadAndInsertRNASeqData();
+        if (performDownload) {
+            try {
+                downloadAndInsertRNASeqData();
+            } catch(Exception e) {
+                e.printStackTrace();
+            }
+        }
 
         if (performMapping)
             mapRnaSeqToRgd();
@@ -250,5 +252,29 @@ public class Manager {
 
     public String getNcbiSoftFilesFtpLink() {
         return ncbiSoftFilesFtpLink;
+    }
+
+    public int getIndexOfStopFolderForDownload() {
+        return indexOfStopFolderForDownload;
+    }
+
+    public void setIndexOfStopFolderForDownload(int indexOfStopFolderForDownload) {
+        this.indexOfStopFolderForDownload = indexOfStopFolderForDownload;
+    }
+
+    public int getIndexOfStartFolderForDownload() {
+        return indexOfStartFolderForDownload;
+    }
+
+    public void setIndexOfStartFolderForDownload(int indexOfStartFolderForDownload) {
+        this.indexOfStartFolderForDownload = indexOfStartFolderForDownload;
+    }
+
+    public boolean isPerformDownload() {
+        return performDownload;
+    }
+
+    public boolean isPerformMapping() {
+        return performMapping;
     }
 }
