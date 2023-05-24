@@ -1,5 +1,7 @@
 package edu.mcw.rgd.RNASeqPipeline;
 
+import org.apache.logging.log4j.Logger;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -28,7 +30,7 @@ public class Series {
     private List<Sample> sampleList = new ArrayList<Sample>(0);
 
 
-    public void handleSeries(String line) {
+    public void handleSeries(String line, Logger log) {
         /*if (line.startsWith("^SERIES")) {
             addSeries();
             if (SoftFileParser.DEBUG) System.out.println("Series: " + line.replace("^SERIES = ", ""));
@@ -36,115 +38,105 @@ public class Series {
         // Semiautomatically generated code
         if (line.startsWith("!Series_title")) {
             title = line.replace("!Series_title = ", "");
-            if (SoftFileParser.DEBUG) System.out.println("Series title: " + title);
+            log.debug("Series title: " + title);
         } else if (line.startsWith("!Series_geo_accession")) {
             geoAccessionID = line.replace("!Series_geo_accession = ", "");
-            if (SoftFileParser.DEBUG) System.out.println("Series geo accession: " + geoAccessionID);
+            log.debug("Series geo accession: " + geoAccessionID);
         } else if (line.startsWith("!Series_status")) {
             status = line.replace("!Series_status = ", "");
-            if (SoftFileParser.DEBUG) System.out.println("Series status: " + status);
+            log.debug("Series status: " + status);
         } else if (line.startsWith("!Series_submission_date")) {
             submissionDate = line.replace("!Series_submission_date = ", "");
-            if (SoftFileParser.DEBUG) System.out.println("Series submission date: " + submissionDate);
+            log.debug("Series submission date: " + submissionDate);
         } else if (line.startsWith("!Series_last_update_date")) {
             lastUpdateDate = line.replace("!Series_last_update_date = ", "");
-            if (SoftFileParser.DEBUG) System.out.println("Series last update date: " + lastUpdateDate);
+            log.debug("Series last update date: " + lastUpdateDate);
         } else if (line.startsWith("!Series_pubmed_id")) {
             pubmedID = line.replace("!Series_pubmed_id = ", "");
-            if (SoftFileParser.DEBUG) System.out.println("Series pubmed id: " + pubmedID);
+            log.debug("Series pubmed id: " + pubmedID);
         } else if (line.startsWith("!Series_summary")) {
             summary = line.replace("!Series_summary = ", "").replace(" ", "");
-            if (SoftFileParser.DEBUG) System.out.println("Series summary: " + summary);
+            log.debug("Series summary: " + summary);
         } else if (line.startsWith("!Series_type")) {
             type = line.replace("!Series_type = ", "");
-            if (SoftFileParser.DEBUG) System.out.println("Series type: " + type);
+            log.debug("Series type: " + type);
         }
 
         // Manual handling of Subtypes
         else if (line.startsWith("!Series_overall_design")) {
             overallDesign.addStore(line, "!Series_overall_design = ");
-            if (SoftFileParser.DEBUG)
-                System.out.println("Series overall design: " + overallDesign.getCurrentStore());
+            log.debug("Series overall design: " + overallDesign.getCurrentStore());
         } else if (line.startsWith("!Series_contributor")) {
             contributor.addStore(line, "!Series_contributor = ");
-            if (SoftFileParser.DEBUG)
-                System.out.println("Series contributor: " + contributor.getCurrentStore());
+            log.debug("Series contributor: " + contributor.getCurrentStore());
         } else if (line.startsWith("!Series_sample_id")) {
             sampleID.addStore(line, "!Series_sample_id = ");
-            if (SoftFileParser.DEBUG)
-                System.out.println("Series sample ID: " + sampleID.getCurrentStore());
+            log.debug("Series sample ID: " + sampleID.getCurrentStore());
         } else if (line.startsWith("!Series_supplementary_file")) {
             supplementaryFile.addStore(line, "!Series_supplementary_file = ");
-            if (SoftFileParser.DEBUG)
-                System.out.println("Series supplementary file: " + supplementaryFile.getCurrentStore());
+            log.debug("Series supplementary file: " + supplementaryFile.getCurrentStore());
         } else if (line.startsWith("!Series_relation")) {
             relation.addStore(line, "!Series_relation = ");
-            if (SoftFileParser.DEBUG)
-                System.out.println("Series relation: " + relation.getCurrentStore());
+            log.debug("Series relation: " + relation.getCurrentStore());
         }
 
         // Semiautomatically generated code
         else if (line.startsWith("!Series_contact_name")) {
             contactName = line.replace("!Series_contact_name = ", "");
-            if (SoftFileParser.DEBUG) System.out.println("Series contact name: " + contactName);
+            log.debug("Series contact name: " + contactName);
         } else if (line.startsWith("!Series_contact_email")) {
             contactEmail = line.replace("!Series_contact_email = ", "");
-            if (SoftFileParser.DEBUG) System.out.println("Series contact email: " + contactEmail);
+            log.debug("Series contact email: " + contactEmail);
         } else if (line.startsWith("!Series_contact_phone")) {
             contactPhone = line.replace("!Series_contact_phone = ", "");
-            if (SoftFileParser.DEBUG) System.out.println("Series contact phone: " + contactPhone);
+            log.debug("Series contact phone: " + contactPhone);
         } else if (line.startsWith("!Series_contact_fax")) {
             contactFax = line.replace("!Series_contact_fax = ", "");
-            if (SoftFileParser.DEBUG) System.out.println("Series contact fax: " + contactFax);
+            log.debug("Series contact fax: " + contactFax);
         } else if (line.startsWith("!Series_contact_institute")) {
             contactInstitution = line.replace("!Series_contact_institute = ", "");
-            if (SoftFileParser.DEBUG)
-                System.out.println("Series contact institute: " + contactInstitution);
+            log.debug("Series contact institute: " + contactInstitution);
         } else if (line.startsWith("!Series_contact_department")) {
             contactDepartment = line.replace("!Series_contact_department = ", "");
-            if (SoftFileParser.DEBUG)
-                System.out.println("Series contact department: " + contactDepartment);
+            log.debug("Series contact department: " + contactDepartment);
         } else if (line.startsWith("!Series_contact_laboratory")) {
             contactLaboratory = line.replace("!Series_contact_laboratory = ", "");
-            if (SoftFileParser.DEBUG)
-                System.out.println("Series contact laboratory: " + contactLaboratory);
+            log.debug("Series contact laboratory: " + contactLaboratory);
         } else if (line.startsWith("!Series_contact_address")) {
             contactAddress = line.replace("!Series_contact_address = ", "");
-            if (SoftFileParser.DEBUG) System.out.println("Series contact address: " + contactAddress);
+            log.debug("Series contact address: " + contactAddress);
         } else if (line.startsWith("!Series_contact_city")) {
             contactCity = line.replace("!Series_contact_city = ", "");
-            if (SoftFileParser.DEBUG) System.out.println("Series contact city: " + contactCity);
+            log.debug("Series contact city: " + contactCity);
         } else if (line.startsWith("!Series_contact_state")) {
             contactState = line.replace("!Series_contact_state = ", "");
-            if (SoftFileParser.DEBUG) System.out.println("Series contact state: " + contactState);
+            log.debug("Series contact state: " + contactState);
         } else if (line.startsWith("!Series_contact_zip/postal_code")) {
             contactZipcode = line.replace("!Series_contact_zip/postal_code = ", "");
-            if (SoftFileParser.DEBUG)
-                System.out.println("Series contact zip/postal code: " + contactZipcode);
+            log.debug("Series contact zip/postal code: " + contactZipcode);
         } else if (line.startsWith("!Series_contact_country")) {
             contactCountry = line.replace("!Series_contact_country = ", "");
-            if (SoftFileParser.DEBUG) System.out.println("Series contact country: " + contactCountry);
+            log.debug("Series contact country: " + contactCountry);
         } else if (line.startsWith("!Series_contact_web_link")) {
             contactWebLink = line.replace("!Series_contact_web_link = ", "");
-            if (SoftFileParser.DEBUG) System.out.println("Series contact web link: " + contactWebLink);
+            log.debug("Series contact web link: " + contactWebLink);
         } else if (line.startsWith("!Series_platform_id")) {
             platformID = line.replace("!Series_platform_id = ", "");
-            if (SoftFileParser.DEBUG) System.out.println("Series platform id: " + platformID);
+            log.debug("Series platform id: " + platformID);
         } else if (line.startsWith("!Series_platform_organism")) {
             platformOrganism = line.replace("!Series_platform_organism = ", "");
-            if (SoftFileParser.DEBUG)
-                System.out.println("Series platform organism: " + platformOrganism);
+            log.debug("Series platform organism: " + platformOrganism);
         } else if (line.startsWith("!Series_platform_taxid")) {
             platformTaxID = line.replace("!Series_platform_taxid = ", "");
-            if (SoftFileParser.DEBUG) System.out.println("Series platform taxid: " + platformTaxID);
+            log.debug("Series platform taxid: " + platformTaxID);
         } else if (line.startsWith("!Series_sample_organism")) {
             sampleOrganism = line.replace("!Series_sample_organism = ", "");
-            if (SoftFileParser.DEBUG) System.out.println("Series sample organism: " + sampleOrganism);
+            log.debug("Series sample organism: " + sampleOrganism);
         } else if (line.startsWith("!Series_sample_taxid")) {
             sampleTaxID = line.replace("!Series_sample_taxid = ", "");
-            if (SoftFileParser.DEBUG) System.out.println("Series sample taxid: " + sampleTaxID);
+            log.debug("Series sample taxid: " + sampleTaxID);
         } else {
-            if (SoftFileParser.DEBUG) System.out.println(line);
+            log.debug(line);
         }
 
     }

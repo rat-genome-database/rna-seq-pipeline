@@ -3,10 +3,7 @@ package edu.mcw.rgd.RNASeqPipeline;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import java.io.File;
-import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.List;
+import java.util.*;
 
 /**
  * Created by cdursun on 7/24/2017.
@@ -21,7 +18,8 @@ public class DownloaderThread implements Runnable {
     private SoftFileDownloader softFileDownloader;
     private SoftFileParser softFileParser;
 
-    public DownloaderThread(int threadNum, SoftFileDownloader softFileDownloader, SoftFileParser softFileParser, RnaSeqDAO rnaSeqDao, int maxNumOfFilesPerFolderOnNcbi, int startIndexForFolder, int stopIndexForFolder){
+    public DownloaderThread(int threadNum, SoftFileDownloader softFileDownloader, SoftFileParser softFileParser, RnaSeqDAO rnaSeqDao,
+                            int maxNumOfFilesPerFolderOnNcbi, int startIndexForFolder, int stopIndexForFolder){
         this.threadNum = threadNum;
         this.rnaSeqDao = rnaSeqDao;
         this.softFileDownloader = softFileDownloader;
@@ -36,20 +34,18 @@ public class DownloaderThread implements Runnable {
         loggerSummary.info("DownloaderThread-" + threadNum + " => started interval folders: " + startIndexForFolder +
                 "-" + stopIndexForFolder + ", time: " + Calendar.getInstance().getTime());
 
-        System.out.println("DownloaderThread-" + threadNum + " => started interval folders: " + startIndexForFolder +
-                "-" + stopIndexForFolder + ", time: " + Calendar.getInstance().getTime());
         String softFileName;
         for (int i = startIndexForFolder; i < stopIndexForFolder; i++) {
 
             String directoryName = SoftFileDownloader.getNcbiDirectoryName(i);
 
             softFileDownloader.setExternalFile( SoftFileDownloader.getGeoSoftFilesFtpLink()+ directoryName);
-            String[] fileAccIds = null;
-            List<String> existingIds = new ArrayList<>();
+            String[] fileAccIds;
+            Set<String> existingIds;
             List<String> loaded = new ArrayList<>();
             try {
                 fileAccIds = softFileDownloader.listFiles();
-                existingIds = rnaSeqDao.getGeoIds("GSE"+i+"%");
+                existingIds = new HashSet<>(rnaSeqDao.getGeoIds("GSE"+i+"%"));
             } catch (Exception e) {
                 loggerSummary.error("Directory list error : Skipping directory " + softFileDownloader.getExternalFile() );
                 continue;
@@ -61,13 +57,12 @@ public class DownloaderThread implements Runnable {
                     softFileName = softFileDownloader.downloadAndExtractSoftFile(directoryName, fileAccId);
                     System.out.println(softFileName);
                     if (softFileName == null) continue;
-                    File file = new File(softFileName);
-                    Series series = softFileParser.parse(file);
+
+                    Series series = softFileParser.parse(softFileName, loggerSummary);
                     if (series != null)
                         rnaSeqDao.insertRnaSeq(series);
                     else
                         loggerSummary.error("Parse error : " + softFileName);
-                    file.delete();
 
                     loggerSummary.info("Updated: "+series.getGeoAccessionID());
                 }

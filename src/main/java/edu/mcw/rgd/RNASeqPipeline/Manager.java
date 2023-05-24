@@ -41,7 +41,7 @@ public class Manager {
         Manager manager= (Manager) bf.getBean("main");
         manager.init(bf);
 
-        Date time0 = Calendar.getInstance().getTime();
+        Date time0 = new Date();
         for( int i=0; i<args.length; i++ ) {
             String arg = args[i];
             switch (arg) {
@@ -73,8 +73,16 @@ public class Manager {
             }
         }
 
-        if (performMapping)
-            mapRnaSeqToRgd();
+        if (performMapping) {
+
+            // set cutoff date to Apr 1, 2023
+            Calendar cal = Calendar.getInstance();
+            cal.set(2023, 4-1, 1);
+            Date cutoffDate = cal.getTime();
+
+            // (re)map all rows created after May 1, 2023
+            mapRnaSeqToRgd(cutoffDate);
+        }
 
        /* String input = "from, HeLa cell cytoplasmic extracts atria doing surgeries multi-unit " +
                 "eyes exocrine pancreas subdivision of organism along the main body axis Leydig's organ " +
@@ -84,8 +92,9 @@ public class Manager {
        System.out.println(rnaSeqToRgdMapper.lemmatize(input));*/
     }
 
-    public void mapRnaSeqToRgd() throws Exception{
-        rnaSeqToRgdMapper.init();
+    public void mapRnaSeqToRgd(Date dateCutoff) throws Exception {
+
+        rnaSeqToRgdMapper.init(dateCutoff);
         ExecutorService executor = Executors.newFixedThreadPool(numberOfMapperThreads);
 
         final int offset = rnaSeqToRgdMapper.getRnaSeqList().size() / numberOfMapperThreads;
@@ -129,34 +138,11 @@ public class Manager {
         executor.shutdown();
         executor.awaitTermination(Integer.MAX_VALUE, TimeUnit.SECONDS);
 
-//        loggerSummary.info("Total number of files downloaded: " + softFileDownloader.getNumberOfDownloadedFiles());
-//        loggerSummary.info("Total number of empty files : " + softFileDownloader.getNumberOfEmptyFiles());
+        loggerSummary.info("Total number of files downloaded: " + softFileDownloader.getNumberOfDownloadedFiles());
+        loggerSummary.info("Total number of empty files : " + softFileDownloader.getNumberOfEmptyFiles());
     }
 
 
-    /*private void downloadAndInsertRNASeqData() throws Exception{
-        rnaSeqDao = new RnaSeqDAO();
-        int i = iIndex;
-        int j = jIndex;
-        String softFileName;
-        for (; i <= MAX_NUM_OF_FOLDERS_ON_NCBI; i++) {
-            for (; j <= MAX_NUM_OF_FILES_PER_FOLDER_ON_NCBI; j++) {
-                softFileName = softFileDownloader.downloadSoftFile(i, j);
-
-                if (softFileName == null ) continue;
-
-                File file = new File(softFileName);
-
-                SoftFileParser.parse(file);
-                rnaSeqDao.insertRnaSeq(SoftFileParser.allSOFTs.get(0));
-                SoftFileParser.reset();
-                file.delete();
-            }
-            j = 0;
-        }
-        loggerSummary.info("Total number of files downloaded: " + softFileDownloader.getNumberOfDownloadedFiles());
-        loggerSummary.info("Total number of empty files : " + softFileDownloader.getNumberOfEmptyFiles());
-    } */
 
     void init(DefaultListableBeanFactory bf) {
         loggerSummary.info(getVersion());

@@ -14,6 +14,7 @@ import org.springframework.dao.DuplicateKeyException;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
+import java.sql.Timestamp;
 import java.util.*;
 
 public class RnaSeqDAO extends AbstractDAO {
@@ -201,24 +202,21 @@ public class RnaSeqDAO extends AbstractDAO {
      * @return list of RnaSeq objects
      * @throws Exception when something really bad happens in spring framework
      */
-    public List<RnaSeq> getAllRnaSeq() throws Exception{
+    public List<RnaSeq> getAllRnaSeq(Date dateCutoff) throws Exception{
 
         ArrayList rnaSeqList = new ArrayList();
-        int numberOfMappedRecords = 0;
 
-        int i = 1;
-        Connection conn = null;
-
-        try {
-            conn =  this.getConnection();
+        try (Connection conn = this.getConnection() ){
             String sql = "select KEY,SAMPLE_TISSUE, SAMPLE_STRAIN, SAMPLE_CELL_LINE, SAMPLE_CELL_TYPE, RGD_TISSUE_TERM_ACC, RGD_CELL_TERM_ACC, RGD_STRAIN_TERM_ACC, RGD_STRAIN_RGD_ID " +
                     "from rna_seq where (LOWER(sample_organism)='rattus norvegicus' or LOWER(sample_organism)='homo sapiens' " +
                     "or LOWER(sample_organism)='mus musculus' \n" +
-                    "or LOWER(sample_organism)='chinchilla lanigera' or LOWER(sample_organism)='pan paniscus' or LOWER(sample_organism)='canis lupus familiaris'\n" +
-                    "or LOWER(sample_organism)='ictidomys tridecemlineatus' or LOWER(sample_organism)='danio rerio')" +
-                    "and geo_accession_id not in ('GSE50027','GSE53960')"; //
+                    "or LOWER(sample_organism)='chinchilla lanigera' or LOWER(sample_organism)='pan paniscus' or LOWER(sample_organism)='canis lupus familiaris' \n" +
+                    "or LOWER(sample_organism)='ictidomys tridecemlineatus' or LOWER(sample_organism)='danio rerio') " +
+                    "and geo_accession_id not in ('GSE50027','GSE53960') " +
+                    "AND created_in_rgd>?"; //
 
             PreparedStatement ps = conn.prepareStatement(sql);
+            ps.setTimestamp(1, new Timestamp(dateCutoff.getTime()));
             ResultSet rs = ps.executeQuery();
 
 
@@ -236,16 +234,10 @@ public class RnaSeqDAO extends AbstractDAO {
                 rnaSeq.setRgdStrainRgdId(rs.getInt("RGD_STRAIN_RGD_ID"));*/
 
                 rnaSeqList.add(rnaSeq);
-                i++;
             }
 
             loggerSummary.info("Total number of RnaSeq records pulled from DB : " + rnaSeqList.size());
             return rnaSeqList;
-        } finally {
-            try {
-                conn.close();
-            }catch (Exception ignored) {
-            }
         }
     }
 

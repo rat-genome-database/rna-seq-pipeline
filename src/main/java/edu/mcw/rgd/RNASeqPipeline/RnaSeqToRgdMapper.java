@@ -44,13 +44,13 @@ public class RnaSeqToRgdMapper{
     private int dbConnectionCheckInterval;
 
 
-    public void init() throws Exception{
+    public void init(Date dateCutoff) throws Exception{
 
 
         StrainDAO strainDAO = new StrainDAO();
         OntologyXDAO ontologyXDAO = new OntologyXDAO();
 
-        rnaSeqList = rnaSeqDao.getAllRnaSeq();
+        rnaSeqList = rnaSeqDao.getAllRnaSeq(dateCutoff);
         rnaSeqRgdStrainPairMapByTermAcc = tabDelimetedTextParser.getRnaSeqAndRgdStrainMap("byOntTermAccId");
         rnaSeqRgdStrainPairMapByRgdId = tabDelimetedTextParser.getRnaSeqAndRgdStrainMap("byRgdId");
         crossSpeciesTerms = ontologyXDAO.getActiveTerms(crossSpeciesAnatomyOntId);
