@@ -46,7 +46,16 @@ public class DownloaderThread implements Runnable {
             List<String> loaded = new ArrayList<>();
             try {
                 fileAccIds = softFileDownloader.listFiles();
-                existingIds = new HashSet<>(rnaSeqDao.getGeoIds("GSE"+i+"%"));
+
+                if( i==0 ) {
+                    existingIds = new HashSet<>();
+                    existingIds.addAll( rnaSeqDao.getGeoIds("GSE_") );
+                    existingIds.addAll( rnaSeqDao.getGeoIds("GSE__") );
+                    existingIds.addAll( rnaSeqDao.getGeoIds("GSE___") );
+
+                } else {
+                    existingIds = new HashSet<>(rnaSeqDao.getGeoIds("GSE" + i + "___"));
+                }
             } catch (Exception e) {
                 loggerSummary.error("Directory list error : Skipping directory " + softFileDownloader.getExternalFile() );
                 continue;
