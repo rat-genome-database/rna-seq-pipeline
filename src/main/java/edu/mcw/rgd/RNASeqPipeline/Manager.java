@@ -54,7 +54,13 @@ public class Manager {
             }
         }
         try {
-            manager.run(time0);
+            // set cutoff date for ontology analysis to Apr 1, 2023
+            Calendar cal = Calendar.getInstance();
+            cal.set(2023, 4-1, 1);
+            Date analysisCutoffDate = cal.getTime();
+
+            manager.run(analysisCutoffDate);
+
         } catch (Exception e) {
             e.printStackTrace();
             throw e;
@@ -63,7 +69,7 @@ public class Manager {
         loggerSummary.info("========== Elapsed time " + Utils.formatElapsedTime(time0.getTime(), System.currentTimeMillis()) + ". ==========");
     }
 
-    public void run(Date runDate) throws Exception {
+    public void run(Date analysisCutoffDate) throws Exception {
 
         if (performDownload) {
             try {
@@ -74,14 +80,8 @@ public class Manager {
         }
 
         if (performMapping) {
-
-            // set cutoff date to Apr 1, 2023
-            Calendar cal = Calendar.getInstance();
-            cal.set(2023, 4-1, 1);
-            Date cutoffDate = cal.getTime();
-
-            // (re)map all rows created after May 1, 2023
-            mapRnaSeqToRgd(cutoffDate);
+            // (re)map all rows created after the cutoff date
+            mapRnaSeqToRgd( analysisCutoffDate );
         }
 
        /* String input = "from, HeLa cell cytoplasmic extracts atria doing surgeries multi-unit " +

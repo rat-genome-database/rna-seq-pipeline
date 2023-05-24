@@ -3,6 +3,7 @@ package edu.mcw.rgd.RNASeqPipeline;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import java.io.File;
 import java.util.*;
 
 /**
@@ -63,6 +64,9 @@ public class DownloaderThread implements Runnable {
                         rnaSeqDao.insertRnaSeq(series);
                     else
                         loggerSummary.error("Parse error : " + softFileName);
+
+                    // remove the file after use (*soft* files take up *a lot* of disk space)
+                    new File(softFileName).delete();
 
                     loggerSummary.info("Updated: "+series.getGeoAccessionID());
                 }
