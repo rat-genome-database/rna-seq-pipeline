@@ -28,10 +28,12 @@ public class RnaSeqDAO extends AbstractDAO {
     private String cellOntId;
     private String ratStrainsOntId;
 
+    /*
     private OntologyXDAO odao = new OntologyXDAO();
     GeneExpressionDAO gedao = new GeneExpressionDAO();
     XdbIdDAO xdbIdDAO = new XdbIdDAO();
-
+*/
+    
     public List<RnaSeq> getDataForGSE(String gseAccId) throws Exception {
         String sql = "SELECT * FROM rna_seq WHERE geo_accession_id=?";
         return RnaSeqQuery.execute(this, sql, gseAccId);
@@ -340,6 +342,7 @@ public class RnaSeqDAO extends AbstractDAO {
         update(sql, oa);
 
     }
+    /*
     public edu.mcw.rgd.datamodel.pheno.Sample getSample(edu.mcw.rgd.datamodel.pheno.Sample sample) throws Exception{
         String sql = "Select * from Sample where number_of_animals = "+sample.getNumberOfAnimals()+" and strain_ont_id";
 
@@ -420,11 +423,11 @@ public class RnaSeqDAO extends AbstractDAO {
         if(records == null || records.isEmpty())
             return 0;
         else return records.get(0).getId();
-    }
+    }*/
     public void setCrossSpeciesAnatomyOntId(String crossSpeciesAnatomyOntId) {
         this.crossSpeciesAnatomyOntId = crossSpeciesAnatomyOntId;
     }
-    public void insertGeneExpressionRecordValues(List<GeneExpressionRecordValue> records) throws Exception{
+    /*public void insertGeneExpressionRecordValues(List<GeneExpressionRecordValue> records) throws Exception{
         String sql = "INSERT INTO gene_expression_values (gene_expression_value_id, expressed_object_rgd_id"
                 +",expression_measurement_ont_id, expression_value_notes, gene_expression_exp_record_id"
                 +",expression_value, expression_unit, map_key,expression_level) VALUES(?,?,?,?,?,?,?,?,?)";
@@ -468,7 +471,7 @@ public class RnaSeqDAO extends AbstractDAO {
         if(genes == null || genes.isEmpty())
             return 0;
         else return genes.get(0).getRgdId();
-    }
+    }*/
 
     public String getCrossSpeciesAnatomyOntId() {
         return crossSpeciesAnatomyOntId;

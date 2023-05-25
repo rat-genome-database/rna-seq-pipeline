@@ -70,6 +70,10 @@ public class RnaSeqToRgdMapper{
 
     }
 
+    public void init2() throws Exception{
+        lemmatizerDragon = LemmatizerDragon.getInstance();
+
+    }
     public String matchRnaSeqStrainToRgdByOntTerm(String sampleStrain){
 
         if (sampleStrain == null) return null;

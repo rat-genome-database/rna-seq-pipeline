@@ -47,7 +47,7 @@ public class GSE125483 {
         final boolean firstRun = true;
         int mapKey = 360;
         String file = "/data/rat/GSE125483_rat.salmon.tximport.tpm.txt";
-
+/*
         // load all RnaSeq data from DB
         List<RnaSeq> rnaSeqs = dao.getDataForGSE(gseAcc);
 
@@ -147,8 +147,9 @@ public class GSE125483 {
             }
         System.out.println(geneExpressionRecordMap);
         loadValues(mapKey,file);
+        */
     }
-
+/*
     Sample parseAge(Sample sample, String sampleAge) throws Exception {
         if( sampleAge.endsWith(" weeks") ) {
             String weeks = sampleAge.substring(0, sampleAge.length()-" weeks".length()).trim();
@@ -467,5 +468,5 @@ public class GSE125483 {
         tpmsReader.close();
     }
 
-
+*/
 }
