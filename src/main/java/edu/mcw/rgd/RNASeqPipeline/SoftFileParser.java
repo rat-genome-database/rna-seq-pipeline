@@ -1,12 +1,13 @@
 package edu.mcw.rgd.RNASeqPipeline;
 
+import edu.mcw.rgd.process.Utils;
+import org.apache.logging.log4j.Logger;
+
 import java.io.*;
 
 // Assume that there is only ONE instance of this class 
 // at any given time, so much of the content is static
 public class SoftFileParser {
-    static final boolean DEBUG = false;
-
     private String version;
 
     public static String getCurrentLocation() {
@@ -23,34 +24,25 @@ public class SoftFileParser {
         });
     }
 
-    public void readFileList(File[] listOfFiles) {
-        for (int i = 0; i < listOfFiles.length; i++) {
-            if (listOfFiles[i].toString().endsWith(".soft")) {
-                if (DEBUG) System.out.println("\nSOFT file to read: " + listOfFiles[i] + "\n-----------------");
-
-                parse(listOfFiles[i]);
-            }
-        }
-    }
-    public Series parse(File inputFile) {
+    public Series parse(String inputFileName, Logger log) {
         Series series = null;
-        try (BufferedReader br = new BufferedReader(new FileReader(inputFile))) {
+        try (BufferedReader br = Utils.openReader(inputFileName) ) {
             series = new Series();
             for (String line; (line = br.readLine()) != null; ) {
                 if (line.startsWith("^SERIES") || line.startsWith("!Series")) {
-                    series.handleSeries(line);
+                    series.handleSeries(line, log);
                 }
                 else if (line.startsWith("^PLATFORM") || line.startsWith("!Platform")) {
                     if (line.startsWith("^PLATFORM")){
                         series.getPlatformList().add(new Platform());
                     }
-                    series.getLastPlatform().handlePlatform(line);
+                    series.getLastPlatform().handlePlatform(line, log);
                 }
                 else if (line.startsWith("^SAMPLE") || line.startsWith("!Sample")){
                     if (line.startsWith("^SAMPLE")){
                         series.getSampleList().add(new Sample());
                     }
-                    series.getLastSample().handleSample(line);
+                    series.getLastSample().handleSample(line, log);
                 }
 
                 //handleSOFTobjects(series, line);
@@ -67,7 +59,7 @@ public class SoftFileParser {
 
     public static void main(String[] args) {
         // Print-out current location
-        if (DEBUG) System.out.println("Current working location: " + getCurrentLocation());
+        System.out.println("Current working location: " + getCurrentLocation());
 
         // Get the list of files from the local directory
         File[] listOfFiles = getFileList(getCurrentLocation());
