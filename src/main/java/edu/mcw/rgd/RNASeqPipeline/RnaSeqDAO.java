@@ -6,6 +6,7 @@ package edu.mcw.rgd.RNASeqPipeline;
 
 import edu.mcw.rgd.dao.AbstractDAO;
 import edu.mcw.rgd.dao.spring.StringListQuery;
+import edu.mcw.rgd.datamodel.SpeciesType;
 import edu.mcw.rgd.process.Utils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -204,15 +205,20 @@ public class RnaSeqDAO extends AbstractDAO {
      */
     public List<RnaSeq> getAllRnaSeq(Date dateCutoff) throws Exception{
 
+        List<String> organisms = new ArrayList<>();
+        for( int sp: SpeciesType.getSpeciesTypeKeys() ) {
+            if( sp>0 ) {
+                organisms.add( SpeciesType.getTaxonomicName(sp).toLowerCase() );
+            }
+        }
+        String organismList = Utils.concatenate(organisms, ",", "'");
+
         ArrayList rnaSeqList = new ArrayList();
 
         try (Connection conn = this.getConnection() ){
             String sql = "select KEY,SAMPLE_TISSUE, SAMPLE_STRAIN, SAMPLE_CELL_LINE, SAMPLE_CELL_TYPE, RGD_TISSUE_TERM_ACC, RGD_CELL_TERM_ACC, RGD_STRAIN_TERM_ACC, RGD_STRAIN_RGD_ID " +
-                    "from rna_seq where (LOWER(sample_organism)='rattus norvegicus' or LOWER(sample_organism)='homo sapiens' " +
-                    "or LOWER(sample_organism)='mus musculus' \n" +
-                    "or LOWER(sample_organism)='chinchilla lanigera' or LOWER(sample_organism)='pan paniscus' or LOWER(sample_organism)='canis lupus familiaris' \n" +
-                    "or LOWER(sample_organism)='ictidomys tridecemlineatus' or LOWER(sample_organism)='danio rerio') " +
-                    "and geo_accession_id not in ('GSE50027','GSE53960') " +
+                    "FROM rna_seq where LOWER(sample_organism) IN ("+organismList+") " +
+                    "AND geo_accession_id not in ('GSE50027','GSE53960') " +
                     "AND created_in_rgd>?"; //
 
             PreparedStatement ps = conn.prepareStatement(sql);
