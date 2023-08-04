@@ -216,22 +216,6 @@ public class Manager {
         return downloaderDownloadRetryIntervalInSeconds;
     }
 
-    public void setIndexOfStartFolderForDownload(int indexOfStartFolderForDownload) {
-        this.indexOfStartFolderForDownload = indexOfStartFolderForDownload;
-    }
-
-    public int getIndexOfStopFolderForDownload() {
-        return indexOfStopFolderForDownload;
-    }
-
-    public void setIndexOfStopFolderForDownload(int indexOfStopFolderForDownload) {
-        this.indexOfStopFolderForDownload = indexOfStopFolderForDownload;
-    }
-
-    public int getIndexOfStartFolderForDownload() {
-        return indexOfStartFolderForDownload;
-    }
-
     public void setPerformDownload(boolean performDownload) {
         this.performDownload = performDownload;
     }
