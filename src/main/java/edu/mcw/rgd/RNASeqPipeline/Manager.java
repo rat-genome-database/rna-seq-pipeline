@@ -1,5 +1,6 @@
 package edu.mcw.rgd.RNASeqPipeline;
 
+import edu.mcw.rgd.process.CounterPool;
 import edu.mcw.rgd.process.Utils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -19,7 +20,6 @@ import java.util.concurrent.TimeUnit;
 public class Manager {
     private String version;
     private final static Logger loggerSummary = LogManager.getLogger("summary");
-    private SoftFileDownloader softFileDownloader;
 
     private RnaSeqToRgdMapper rnaSeqToRgdMapper;
     private byte numberOfMapperThreads;
@@ -115,6 +115,8 @@ public class Manager {
 
     private void downloadAndInsertRNASeqData() throws Exception{
 
+        CounterPool counters = new CounterPool();
+
         SoftFileDownloader.setGeoSoftFilesFtpLink(ncbiSoftFilesFtpLink);
         ExecutorService executor = Executors.newFixedThreadPool(numberOfDownloaderThreads);
 
@@ -128,9 +130,9 @@ public class Manager {
                 folderStopIndex = indexOfStopFolderForDownload;
 
             System.out.println("Starting thread "+ i);
-            DownloaderThread thread = new DownloaderThread(i, new SoftFileDownloader(downloaderMaxRetryCount,
-                    downloaderDownloadRetryIntervalInSeconds), new SoftFileParser(), new RnaSeqDAO(),
-                    numberOfFilesPerFolderOnNcbi, folderStartIndex, folderStopIndex);
+            DownloaderThread thread = new DownloaderThread(i,
+                    new SoftFileDownloader(downloaderMaxRetryCount, downloaderDownloadRetryIntervalInSeconds, counters),
+                    new SoftFileParser(), new RnaSeqDAO(), numberOfFilesPerFolderOnNcbi, folderStartIndex, folderStopIndex);
 
             executor.execute(thread);
         }
@@ -138,8 +140,8 @@ public class Manager {
         executor.shutdown();
         executor.awaitTermination(Integer.MAX_VALUE, TimeUnit.SECONDS);
 
-        loggerSummary.info("Total number of files downloaded: " + softFileDownloader.getNumberOfDownloadedFiles());
-        loggerSummary.info("Total number of empty files : " + softFileDownloader.getNumberOfEmptyFiles());
+        loggerSummary.info("Total number of files downloaded: " + counters.get("numberOfDownloadedFiles"));
+        loggerSummary.info("Total number of empty files : " + counters.get("numberOfEmptyFiles"));
     }
 
 
@@ -155,17 +157,6 @@ public class Manager {
     public void setVersion(String version) {
         this.version = version;
     }
-
-
-    public void setSoftFileDownloader(SoftFileDownloader softFileDownloader) {
-        this.softFileDownloader = softFileDownloader;
-    }
-
-    public SoftFileDownloader getSoftFileDownloader() {
-        return softFileDownloader;
-    }
-
-
 
     public void setRnaSeqToRgdMapper(RnaSeqToRgdMapper rnaSeqToRgdMapper) {
         this.rnaSeqToRgdMapper = rnaSeqToRgdMapper;

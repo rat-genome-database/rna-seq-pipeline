@@ -1,5 +1,6 @@
 package edu.mcw.rgd.RNASeqPipeline;
 
+import edu.mcw.rgd.process.CounterPool;
 import edu.mcw.rgd.process.FileDownloader;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -17,16 +18,17 @@ public class SoftFileDownloader extends FileDownloader {
     private static final String SOFT_FILE_SUFFIX = "_family.soft.gz";
     private static String NCBI_GEO_SERIES_SOFT_FILES_FTP_LINK;
 
-    private int numberOfEmptyFiles = 0;
-    private int numberOfDownloadedFiles = 0;
+    private CounterPool counters = new CounterPool();
+
     private final static Logger loggerDownloaded = LogManager.getLogger("downloaded");
     private final static Logger loggerEmpty = LogManager.getLogger("empty");
     private final static Logger loggerRgd = LogManager.getLogger("log_rgd");
 
-    public SoftFileDownloader(byte maxRetryCount, byte downloadRetryIntervalInSeconds){
+    public SoftFileDownloader(byte maxRetryCount, byte downloadRetryIntervalInSeconds, CounterPool counters){
         this.setMaxRetryCount(maxRetryCount);
         this.setDownloadRetryInterval(downloadRetryIntervalInSeconds);
         this.setUseCompression(false);
+        this.counters = counters;
     }
 
     public String downloadAndExtractSoftFile(String directory, String gseAccId) {
@@ -44,9 +46,7 @@ public class SoftFileDownloader extends FileDownloader {
         try {
             String localFile = download();
             loggerDownloaded.info("downloaded: "+localFile);
-            synchronized (this) {
-                numberOfDownloadedFiles++;
-            }
+            counters.increment("numberOfDownloadedFiles");
             return localFile;
 
         }catch (PermanentDownloadErrorException e){
@@ -100,14 +100,6 @@ public class SoftFileDownloader extends FileDownloader {
             }
         }
     }
-
-    public int getNumberOfDownloadedFiles() {
-        return numberOfDownloadedFiles;
-    }
-    public int getNumberOfEmptyFiles() {
-        return numberOfEmptyFiles;
-    }
-
 
     public static void setGeoSoftFilesFtpLink(String ftpLink) {
         NCBI_GEO_SERIES_SOFT_FILES_FTP_LINK = ftpLink;

@@ -1,3 +1,6 @@
+Aug 9, 2023
+  fixed NullPointerException during ontology analysis
+
 Aug 8, 2023
   when loading skip species not in RGD
 
