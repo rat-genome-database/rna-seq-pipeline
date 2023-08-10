@@ -95,22 +95,10 @@ public class Manager {
     public void mapRnaSeqToRgd(Date dateCutoff) throws Exception {
 
         rnaSeqToRgdMapper.init(dateCutoff);
-        ExecutorService executor = Executors.newFixedThreadPool(numberOfMapperThreads);
 
-        final int offset = rnaSeqToRgdMapper.getRnaSeqList().size() / numberOfMapperThreads;
-
-        for (int i = 0; i < numberOfMapperThreads ; i++) {
-            final int startIndex = i * offset;
-            int stopIndex = startIndex + offset;
-            if (i == (numberOfMapperThreads - 1))
-                stopIndex = rnaSeqToRgdMapper.getRnaSeqList().size();
-            executor.execute(new MapperThread(i, rnaSeqToRgdMapper, startIndex, stopIndex));
-        }
-
-        executor.shutdown();
-        executor.awaitTermination(Integer.MAX_VALUE, TimeUnit.SECONDS);
-
-        rnaSeqToRgdMapper.applyMappingToDb();
+        rnaSeqToRgdMapper.getRnaSeqList().stream().forEach( r -> {
+            rnaSeqToRgdMapper.mapRnaSeqToRgd(r);
+        });
     }
 
     private void downloadAndInsertRNASeqData() throws Exception{

@@ -163,6 +163,11 @@ public class RnaSeqToRgdMapper{
                     numberOfMappingsAfterLemmatization++;
                 }
             }
+
+
+            rnaSeqDao.updateRgdFields(rnaSeq);
+
+            loggerSummary.debug("  MAPPED key="+rnaSeq.getKey()+", numberOfMappingsAfterLemmatization="+numberOfMappingsAfterLemmatization);
         }
         catch (Exception e){
             loggerSummary.info(this.getClass() + " - mapRnaSeqToRgd ->" + rnaSeq.getKey() + "- " + e);
@@ -188,22 +193,6 @@ public class RnaSeqToRgdMapper{
         rnaSeqDao.updateRgdMappingFields(rnaSeqList);
         loggerSummary.info("Total number of records after Lemmatization : " + numberOfMappingsAfterLemmatization);
     }
-//https://stackoverflow.com/questions/43621672/stemming-english-words-using-lucene-6
-  /*  public List<String> stem4(String term) throws Exception {
-        Analyzer analyzer = new StandardAnalyzer();
-        TokenStream result = analyzer.tokenStream(null, term);
-        result = new PorterStemFilter(result);
-        result = new StopFilter(result, StopAnalyzer.ENGLISH_STOP_WORDS_SET);
-        CharTermAttribute resultAttr = result.addAttribute(CharTermAttribute.class);
-        result.reset();
-
-        List<String> tokens = new ArrayList<>();
-        while (result.incrementToken()) {
-            tokens.add(resultAttr.toString());
-        }
-        return tokens;
-    }*/
-
 
     public String lemmatize(String input) throws Exception {
         if (input == null) return null;

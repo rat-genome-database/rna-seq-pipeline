@@ -1,0 +1,37 @@
+SAMPLE_STRAIN   RGD_ONT_TERM_ID RGD_ID
+athmyic nude (AN)       RS:0001829      2312499
+BD1X    RS:0000091      61002
+BN rats (Substrain BN/SsNOlaHSD)        RS:0000113      60985
+Brown Norway (BN)       RS:0000113      60985
+Brown Norway Rat        RS:0000113      60985
+Dahl salt sensitive     RS:0000789      69369
+Dark Agouti     RS:0000014      60997
+F344/Cr1        RS:0000215      None
+Fischer F344 inbred strain      RS:0000215      None
+Fisher 344      RS:0000215      None
+Holtzman Sprague Dawley (HSD)   RS:0002942      5508397
+HSD     RS:0002942      5508397
+Hsd:Sprague Dawley      RS:0000698      737903
+Inbred alcohol-preferring (iP10a)       RS:0001377      1641867
+Lewis   RS:0000121      60999
+LEWIS   RS:0000121      60999
+Lewis (LEW/SsNHsd)      RS:0000531      737922
+Lister Hooded   RS:0001828      2312466
+Long Evans -- GSE84932  RS:0002943      5508398
+Long Evans -- GSE60900  RS:0002943      5508398
+Long Evans -- GSE74726  RS:0001827      2308852
+Long Evans -- GSE74727  RS:0001827      2308852
+Long-Evans      RS:0001827      2308852
+Royal College of Surgeons       RS:0002333      None
+Spague-Dawley   RS:0000681      70508
+Sprague Dawley  RS:0000681      70508
+Sprague Dawley rats     RS:0000681      70508
+Sprague-Dawley  RS:0000681      70508
+Sprague-Dawley (SD)     RS:0000681      70508
+wistar  RS:0001013      None
+Wistar  RS:0001013      None
+Wistar Han      RS:0001592      1566433
+Wistar rat      RS:0001013      None
+WNIN    RS:0003771      8655977
+ZSF1    RS:0002288      2312512
+Zucker/Spontaneously Hypertensive Heart Failure RS:0002288      2312512

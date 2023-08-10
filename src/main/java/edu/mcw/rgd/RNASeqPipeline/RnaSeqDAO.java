@@ -120,87 +120,6 @@ public class RnaSeqDAO extends AbstractDAO {
         }
     }
 
-    /**
-     * get list of all RnaSeq with some of the fields required to map RGD DB
-     * @return list of RnaSeq objects
-     * @throws Exception when something really bad happens in spring framework
-     */
-    /*public List<RnaSeq> mapRnaSeqToRgd() throws Exception{
-
-        ArrayList rnaSeqList = new ArrayList();
-        int numberOfMappedRecords = 0;
-
-        List<Term> crossSpeciesTerms = ontologyXDAO.getActiveTerms(crossSpeciesAnatomyOntId);
-        List<TermSynonym> crossSpeciesSynoyms = ontologyXDAO.getActiveSynonyms(crossSpeciesAnatomyOntId);
-        List<Term> cellOntTerms = ontologyXDAO.getActiveTerms(cellOntId);
-        List<TermSynonym> cellOntSynoyms = ontologyXDAO.getActiveSynonyms(cellOntId);
-        List<Term> ratStrainOntTerms = ontologyXDAO.getActiveTerms(ratStrainsOntId);
-        List<TermSynonym> ratStrainOntSynoyms = ontologyXDAO.getActiveSynonyms(ratStrainsOntId);
-        List<Strain> strains = strainDAO.getActiveStrains();
-
-
-        loggerSummary.info("UBERON Terms size : " + crossSpeciesTerms.size());
-        loggerSummary.info("UBERON Synonyms size : " + crossSpeciesSynoyms.size());
-        loggerSummary.info("CL Terms size : " + cellOntTerms.size());
-        loggerSummary.info("CL Synonyms size : " + cellOntSynoyms.size());
-        loggerSummary.info("RS Terms size : " + ratStrainOntTerms.size());
-        loggerSummary.info("RS Synonyms size : " + ratStrainOntSynoyms.size());
-
-        int i = 1;
-        Connection conn = null;
-
-
-        try {
-            conn =  this.getConnection();
-            String sql = "select KEY,SAMPLE_TISSUE, RGD_TISSUE_TERM_ACC, RGD_CELL_TERM_ACC, RGD_CELL_TYPE_TERM_ACC, RGD_TISSUE_TERM_ACC, RGD_STRAIN_RGD_ID " +
-                    "from rna_seq where LOWER(sample_organism)='rattus norvegicus' or LOWER(sample_organism)='homo sapiens' " +
-                    "or LOWER(sample_organism)='mus musculus' \n" +
-                    "or LOWER(sample_organism)='chinchilla lanigera' or LOWER(sample_organism)='pan paniscus' or LOWER(sample_organism)='canis lupus familiaris'\n" +
-                    "or LOWER(sample_organism)='ictidomys tridecemlineatus' or LOWER(sample_organism)='danio rerio' ";
-
-            PreparedStatement ps = conn.prepareStatement(sql);
-            ResultSet rs = ps.executeQuery();
-
-            while (rs.next()) {
-                RnaSeq rnaSeq = new RnaSeq();
-                rnaSeq.setKey(rs.getInt("KEY"));
-                rnaSeq.setSampleTissue(rs.getString("SAMPLE_TISSUE"));
-                rnaSeq.setRgdTissueTermAcc(rs.getString("RGD_TISSUE_TERM_ACC"));
-                rnaSeq.setRgdCellTermAcc(rs.getString("RGD_CELL_TERM_ACC"));
-                rnaSeq.setRgdCellTypeTermAcc(rs.getString("RGD_CELL_TYPE_TERM_ACC"));
-                rnaSeq.setRgdStrainTermAcc(rs.getString("RGD_TISSUE_TERM_ACC"));
-                rnaSeq.setRgdStrainRgdId(rs.getInt("RGD_STRAIN_RGD_ID"));
-
-                byte result = mapByOntTerm(rnaSeq.getSampleTissue(), rnaSeq, crossSpeciesTerms);
-
-                if (result == 0)
-                    result = mapByOntTerm(rnaSeq.getSampleCellLine(), rnaSeq, cellOntTerms);
-                else if (result==0)
-                    result = mapByOntTerm(rnaSeq.getSampleStrain(), rnaSeq, ratStrainOntTerms);
-                else if (result == 0)
-                    result = mapByOntSynoym(rnaSeq.getSampleTissue(), rnaSeq, crossSpeciesSynoyms);
-                else if (result == 0)
-                    result = mapByOntSynoym(rnaSeq.getSampleCellLine(), rnaSeq, cellOntSynoyms);
-                else if (result == 0)
-                    result = mapByOntSynoym(rnaSeq.getSampleStrain(), rnaSeq, ratStrainOntSynoyms);
-
-                if (result == 1)
-                    numberOfMappedRecords++;
-
-                if (i % 10000 == 0)
-                    loggerSummary.info("processed: " + i++);
-            }
-
-            loggerSummary.info("Total number of records by Term & Sample Tissue : " + numberOfMappedRecords);
-
-            return rnaSeqList;
-        } finally {
-            try {
-                conn.close();
-            }catch (Exception ignored) {
-            }
-        }
-    }*/
 
 
 
@@ -225,7 +144,7 @@ public class RnaSeqDAO extends AbstractDAO {
             String sql = "select KEY,SAMPLE_TISSUE, SAMPLE_STRAIN, SAMPLE_CELL_LINE, SAMPLE_CELL_TYPE, RGD_TISSUE_TERM_ACC, RGD_CELL_TERM_ACC, RGD_STRAIN_TERM_ACC, RGD_STRAIN_RGD_ID " +
                     "FROM rna_seq where LOWER(sample_organism) IN ("+organismList+") " +
                     "AND geo_accession_id not in ('GSE50027','GSE53960') " +
-                    "AND created_in_rgd>?"; //
+                    "AND created_in_rgd>? AND date_mapped IS NULL";
 
             PreparedStatement ps = conn.prepareStatement(sql);
             ps.setTimestamp(1, new Timestamp(dateCutoff.getTime()));
@@ -259,12 +178,6 @@ public class RnaSeqDAO extends AbstractDAO {
             updateRgdFields(r);
         }
         loggerSummary.info("==========> Update Ont Terms Time : " + Utils.formatElapsedTime(time0.getTime(), System.currentTimeMillis()) + ". -----");
-    }
-
-    public void updateRgdStrainRgdIds(Set<RnaSeq> rnaSeqList) throws Exception {
-        for (RnaSeq r : rnaSeqList) {
-            updateRgdStrainRgdId(r);
-        }
     }
 
     public int checkConnection() throws Exception{
@@ -303,7 +216,8 @@ public class RnaSeqDAO extends AbstractDAO {
      */
     public int updateRgdFields(RnaSeq rnaSeq) throws Exception{
 
-        String sql = "UPDATE rna_seq SET RGD_TISSUE_TERM_ACC=?, RGD_CELL_TERM_ACC = ?, RGD_STRAIN_TERM_ACC=?, RGD_STRAIN_RGD_ID = ? WHERE key=? ";
+        String sql = "UPDATE rna_seq SET RGD_TISSUE_TERM_ACC=?, RGD_CELL_TERM_ACC=?, RGD_STRAIN_TERM_ACC=?, RGD_STRAIN_RGD_ID=?, DATE_MAPPED=SYSDATE "+
+                "WHERE key=? ";
 
         return update(sql, rnaSeq.getRgdTissueTermAcc(), rnaSeq.getRgdCellTermAcc(),
                 rnaSeq.getRgdStrainTermAcc(), rnaSeq.getRgdStrainRgdId(), rnaSeq.getKey());
