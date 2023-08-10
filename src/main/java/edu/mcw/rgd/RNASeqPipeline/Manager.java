@@ -96,7 +96,7 @@ public class Manager {
 
         rnaSeqToRgdMapper.init(dateCutoff);
 
-        rnaSeqToRgdMapper.getRnaSeqList().stream().forEach( r -> {
+        rnaSeqToRgdMapper.getRnaSeqList().parallelStream().forEach( r -> {
             rnaSeqToRgdMapper.mapRnaSeqToRgd(r);
         });
     }
