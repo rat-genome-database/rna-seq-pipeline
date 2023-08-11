@@ -99,6 +99,7 @@ public class Manager {
         rnaSeqToRgdMapper.getRnaSeqList().parallelStream().forEach( r -> {
             rnaSeqToRgdMapper.mapRnaSeqToRgd(r);
         });
+        loggerSummary.info("Total number of records after Lemmatization : " + rnaSeqToRgdMapper.getNumberOfMappingsAfterLemmatization());
     }
 
     private void downloadAndInsertRNASeqData() throws Exception{

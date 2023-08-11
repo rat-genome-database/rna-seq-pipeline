@@ -442,5 +442,13 @@ public class RnaSeqToRgdMapper{
     public int getDbConnectionCheckInterval() {
         return dbConnectionCheckInterval;
     }
+
+    public int getNumberOfMappingsAfterLemmatization() {
+        return numberOfMappingsAfterLemmatization;
+    }
+
+    public void setNumberOfMappingsAfterLemmatization(int numberOfMappingsAfterLemmatization) {
+        this.numberOfMappingsAfterLemmatization = numberOfMappingsAfterLemmatization;
+    }
 }
 
