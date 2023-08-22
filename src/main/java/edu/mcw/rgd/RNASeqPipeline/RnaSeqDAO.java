@@ -37,6 +37,8 @@ public class RnaSeqDAO extends AbstractDAO {
         String sql = "SELECT distinct(geo_accession_id) FROM rna_seq WHERE geo_accession_id like ?";
         return StringListQuery.execute(this, sql, gseAccId);
     }
+
+    // by default, CURATION_STATUS must be set to 'pending'
     public void insertRnaSeq(Series series){
         try {
 
@@ -52,8 +54,8 @@ public class RnaSeqDAO extends AbstractDAO {
                         "PLATFORM_NAME, PLATFORM_TECHNOLOGY, TOTAL_NUMBER_OF_SAMPLES, NUMBER_OF_RAT_SAMPLES, STUDY_RELATION, CONTRIBUTORS, SAMPLE_ACCESSION_ID, " +
                         "SAMPLE_TITLE, SAMPLE_ORGANISM, SAMPLE_SOURCE, SAMPLE_CHARACTERISTICS, SAMPLE_STRAIN, SAMPLE_AGE, SAMPLE_GENDER, SAMPLE_TISSUE, " +
                         "SAMPLE_CELL_TYPE, SAMPLE_CELL_LINE, SAMPLE_GROWTH_PROTOCOL, SAMPLE_EXTRACT_PROTOCOL, SAMPLE_TREATMENT_PROTOCOL, SAMPLE_DATA_PROCESSING, " +
-                        "SAMPLE_SUPPLEMENTARY_FILES, SAMPLE_RELATION, SUPPLEMENTARY_FILES ) " +
-                        "VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?, ?)";
+                        "SAMPLE_SUPPLEMENTARY_FILES, SAMPLE_RELATION, SUPPLEMENTARY_FILES, CURATION_STATUS ) " +
+                        "VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?, ?,'pending')";
 
                 // skip samples for species that are not in RGD
                 String incomingOrganism = sample.getOrganism_ch1();

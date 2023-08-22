@@ -1,3 +1,6 @@
+Aug 22, 2023
+  rows that are added to RNA_SEQ table have CURATION_STATUS field set to 'pending'
+
 Aug 10, 2023
   code refactoring for ontology mapper
 
