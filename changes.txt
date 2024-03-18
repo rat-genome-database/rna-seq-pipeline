@@ -1,3 +1,7 @@
+Mar 18, 2024
+  updated to java 17
+  increased maximum data series to GSE261nnn (from GSE240nnn)
+
 Aug 22, 2023
   rows that are added to RNA_SEQ table have CURATION_STATUS field set to 'pending'
 

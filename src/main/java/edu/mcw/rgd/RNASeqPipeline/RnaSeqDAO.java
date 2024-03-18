@@ -186,29 +186,6 @@ public class RnaSeqDAO extends AbstractDAO {
         String q = "SELECT 1 FROM DUAL";
         return this.getCount(q);
     }
-  /*  public byte mapByOntTerm(String rnaSeqString, RnaSeq rnaSeq, List<Term>  terms ) throws Exception{
-        if(rnaSeqString == null) return 0;
-        for (Term term : terms) {
-            if (rnaSeqString.toLowerCase().equals(term.getTerm().toLowerCase())) {
-                rnaSeq.setRgdOntTermAcc(term.getAccId());
-                updateRgdOntTermAcc(rnaSeq);
-                return 1;
-            }
-        }
-        return 0;
-    }
-
-    public byte mapByOntSynoym(String rnaSeqString, RnaSeq rnaSeq, List<TermSynonym>  synonyms ) throws Exception{
-        if(rnaSeqString == null) return 0;
-        for (TermSynonym synonym : synonyms) {
-            if (synonym.getType().equals(ontTermExactSynonymType) && rnaSeqString.toLowerCase().equals(synonym.getName().toLowerCase())){
-                rnaSeq.setRgdOntTermAcc(synonym.getTermAcc());
-                updateRgdOntTermAcc(rnaSeq);
-                return 1;
-            }
-        }
-        return 0;
-    }*/
 
     /**
      * Update RnaSeq rgdOntTermAcc fields and rgdStrainRgdId field based on key

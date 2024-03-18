@@ -1,10 +1,10 @@
 <!DOCTYPE beans PUBLIC "-//SPRING//DTD BEAN//EN" "http://www.springframework.org/dtd/spring-beans.dtd">
 <beans>
 	<bean id="main" class="edu.mcw.rgd.RNASeqPipeline.Manager">
-		<property name="version" value="RNASeq Pipeline -- build Aug 22, 2023" />
+		<property name="version" value="RNASeq Pipeline -- build Mar 18, 2024" />
 		<property name="ncbiSoftFilesFtpLink" value="ftp://ftp.ncbi.nlm.nih.gov/geo/series/"/>
 		<property name="indexOfStartFolderForDownload" value="0"/> <!-- default is 0; applies to first thread only -->
-		<property name="indexOfStopFolderForDownload" value="240"/> <!-- applies to last thread only; 240 was last series available in geo as of Aug 9, 2023 -->
+		<property name="indexOfStopFolderForDownload" value="261"/> <!-- applies to last thread only; 261 was last series available in geo as of Mar 18, 2024 -->
 		<property name="numberOfFilesPerFolderOnNcbi" value="1000"/> <!-- 1000 -->
 		<property name="rnaSeqToRgdMapper" ref="rnaSeqToRgdMapper"/>
 		<property name="numberOfMapperThreads" value="10"/><!-- default is 10; so far best performance is got with 10 threads -->
