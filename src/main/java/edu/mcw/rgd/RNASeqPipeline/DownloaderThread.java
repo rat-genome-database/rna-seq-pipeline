@@ -12,33 +12,31 @@ import java.util.*;
 public class DownloaderThread implements Runnable {
     private final static Logger loggerSummary = LogManager.getLogger("summary");
     private int threadNum;
-    private int startIndexForFolder;
-    private int stopIndexForFolder;
+    private List<Integer> indexForFolderList;
     private int maxNumOfFilesPerFolderOnNcbi;
     private RnaSeqDAO rnaSeqDao;
     private SoftFileDownloader softFileDownloader;
     private SoftFileParser softFileParser;
 
     public DownloaderThread(int threadNum, SoftFileDownloader softFileDownloader, SoftFileParser softFileParser, RnaSeqDAO rnaSeqDao,
-                            int maxNumOfFilesPerFolderOnNcbi, int startIndexForFolder, int stopIndexForFolder){
+                            int maxNumOfFilesPerFolderOnNcbi, List<Integer> indexForFolderList){
         this.threadNum = threadNum;
         this.rnaSeqDao = rnaSeqDao;
         this.softFileDownloader = softFileDownloader;
         this.maxNumOfFilesPerFolderOnNcbi = maxNumOfFilesPerFolderOnNcbi;
-        this.startIndexForFolder = startIndexForFolder;
-        this.stopIndexForFolder = stopIndexForFolder;
+        this.indexForFolderList = indexForFolderList;
         this.softFileParser = softFileParser;
 
     }
 
     public void run() {
-        loggerSummary.info("DownloaderThread-" + threadNum + " => started interval folders: " + startIndexForFolder +
-                "-" + stopIndexForFolder + ", time: " + Calendar.getInstance().getTime());
-
         String softFileName;
-        for (int i = startIndexForFolder; i < stopIndexForFolder; i++) {
+        for (int indexForFolder: indexForFolderList) {
 
-            String directoryName = SoftFileDownloader.getNcbiDirectoryName(i);
+            loggerSummary.info("DownloaderThread-" + threadNum + " => started interval folder: " + indexForFolder +
+                    ", time: " + Calendar.getInstance().getTime());
+
+            String directoryName = SoftFileDownloader.getNcbiDirectoryName(indexForFolder);
 
             softFileDownloader.setExternalFile( SoftFileDownloader.getGeoSoftFilesFtpLink()+ directoryName);
             String[] fileAccIds;
@@ -47,14 +45,14 @@ public class DownloaderThread implements Runnable {
             try {
                 fileAccIds = softFileDownloader.listFiles();
 
-                if( i==0 ) {
+                if( indexForFolder==0 ) {
                     existingIds = new HashSet<>();
                     existingIds.addAll( rnaSeqDao.getGeoIds("GSE_") );
                     existingIds.addAll( rnaSeqDao.getGeoIds("GSE__") );
                     existingIds.addAll( rnaSeqDao.getGeoIds("GSE___") );
 
                 } else {
-                    existingIds = new HashSet<>(rnaSeqDao.getGeoIds("GSE" + i + "___"));
+                    existingIds = new HashSet<>(rnaSeqDao.getGeoIds("GSE" + indexForFolder + "___"));
                 }
             } catch (Exception e) {
                 loggerSummary.error("Directory list error : Skipping directory " + softFileDownloader.getExternalFile() );
@@ -82,8 +80,6 @@ public class DownloaderThread implements Runnable {
             }
             loggerSummary.info("Loaded for folder " + directoryName+ " : "+ loaded.size());
         }
-        loggerSummary.info("DownloaderThread-" + threadNum + " => finished interval folders: " + startIndexForFolder +
-                "-" + stopIndexForFolder + ", time: " + Calendar.getInstance().getTime());
+        loggerSummary.info("DownloaderThread-" + threadNum + " => finished, time: " + Calendar.getInstance().getTime());
     }
-
 }

@@ -8,8 +8,10 @@ import org.springframework.beans.factory.support.DefaultListableBeanFactory;
 import org.springframework.beans.factory.xml.XmlBeanDefinitionReader;
 import org.springframework.core.io.FileSystemResource;
 
+import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
@@ -109,19 +111,26 @@ public class Manager {
         SoftFileDownloader.setGeoSoftFilesFtpLink(ncbiSoftFilesFtpLink);
         ExecutorService executor = Executors.newFixedThreadPool(numberOfDownloaderThreads);
 
-        final int offset = (indexOfStopFolderForDownload - indexOfStartFolderForDownload) / numberOfDownloaderThreads;
-        System.out.println(offset);
+        
+        Object[] threadData = new Object[numberOfDownloaderThreads];
         for (int i = 0; i < numberOfDownloaderThreads ; i++) {
-            final int folderStartIndex = i * offset + indexOfStartFolderForDownload;
-            int folderStopIndex = folderStartIndex + offset;
+            threadData[i] = new ArrayList<Integer>();
+        }
+        int threadSlot = -1;
+        for( int folderIndex = indexOfStartFolderForDownload; folderIndex <= indexOfStopFolderForDownload; folderIndex++ ) {
+            threadSlot = (threadSlot + 1) % threadData.length;
 
-            if (i == (numberOfDownloaderThreads - 1)) //set stop folder index for last thread
-                folderStopIndex = indexOfStopFolderForDownload;
+            List<Integer> list = (List<Integer>) threadData[threadSlot];
+            list.add( folderIndex );
+        }
 
+        for (int i = 0; i < numberOfDownloaderThreads ; i++) {
             System.out.println("Starting thread "+ i);
+            List<Integer> folderIndexList = (List<Integer>) threadData[i];
+
             DownloaderThread thread = new DownloaderThread(i,
                     new SoftFileDownloader(downloaderMaxRetryCount, downloaderDownloadRetryIntervalInSeconds, counters),
-                    new SoftFileParser(), new RnaSeqDAO(), numberOfFilesPerFolderOnNcbi, folderStartIndex, folderStopIndex);
+                    new SoftFileParser(), new RnaSeqDAO(), numberOfFilesPerFolderOnNcbi, folderIndexList);
 
             executor.execute(thread);
         }

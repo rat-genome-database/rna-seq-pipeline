@@ -1,17 +1,17 @@
 <!DOCTYPE beans PUBLIC "-//SPRING//DTD BEAN//EN" "http://www.springframework.org/dtd/spring-beans.dtd">
 <beans>
 	<bean id="main" class="edu.mcw.rgd.RNASeqPipeline.Manager">
-		<property name="version" value="RNASeq Pipeline -- build Mar 18, 2024" />
+		<property name="version" value="RNASeq Pipeline -- build Aug 19, 2024" />
 		<property name="ncbiSoftFilesFtpLink" value="ftp://ftp.ncbi.nlm.nih.gov/geo/series/"/>
 		<property name="indexOfStartFolderForDownload" value="0"/> <!-- default is 0; applies to first thread only -->
-		<property name="indexOfStopFolderForDownload" value="261"/> <!-- applies to last thread only; 261 was last series available in geo as of Mar 18, 2024 -->
+		<property name="indexOfStopFolderForDownload" value="275"/> <!-- applies to last thread only; 275 was last series available in geo as of Aug 19, 2024 -->
 		<property name="numberOfFilesPerFolderOnNcbi" value="1000"/> <!-- 1000 -->
 		<property name="rnaSeqToRgdMapper" ref="rnaSeqToRgdMapper"/>
 		<property name="numberOfMapperThreads" value="10"/><!-- default is 10; so far best performance is got with 10 threads -->
-		<property name="numberOfDownloaderThreads" value="10"/><!-- default was 20 -->
+		<property name="numberOfDownloaderThreads" value="5"/><!-- default was 10 -->
 		<property name="downloaderMaxRetryCount" value="3"/><!-- at each try, downloader increases wait time by 2 times starting from intervalInSeconds -->
 		<property name="downloaderDownloadRetryIntervalInSeconds" value="5"/>
-		<property name="performDownload" value="false"/>
+		<property name="performDownload" value="true"/>
 		<property name="performMapping" value="true"/>
 	</bean>
 	<bean id="rnaSeqDao" class="edu.mcw.rgd.RNASeqPipeline.RnaSeqDAO">

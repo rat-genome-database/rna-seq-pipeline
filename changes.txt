@@ -1,3 +1,6 @@
+Mar 19, 2024
+  reduced logging
+
 Mar 18, 2024
   updated to java 17
   increased maximum data series to GSE261nnn (from GSE240nnn)

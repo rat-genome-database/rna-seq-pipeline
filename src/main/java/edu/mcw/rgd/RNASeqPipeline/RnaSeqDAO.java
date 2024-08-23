@@ -6,6 +6,7 @@ package edu.mcw.rgd.RNASeqPipeline;
 
 import edu.mcw.rgd.dao.AbstractDAO;
 import edu.mcw.rgd.dao.spring.StringListQuery;
+import edu.mcw.rgd.dao.spring.StringMapQuery;
 import edu.mcw.rgd.datamodel.SpeciesType;
 import edu.mcw.rgd.process.Utils;
 import org.apache.logging.log4j.LogManager;
@@ -19,7 +20,6 @@ import java.sql.Timestamp;
 import java.util.*;
 
 public class RnaSeqDAO extends AbstractDAO {
-    private final Logger loggerColumnSize = LogManager.getLogger("column_size");
     private final Logger loggerSummary = LogManager.getLogger("summary");
     private final Logger loggerDuplicate = LogManager.getLogger("duplicate");
 
@@ -38,6 +38,30 @@ public class RnaSeqDAO extends AbstractDAO {
         return StringListQuery.execute(this, sql, gseAccId);
     }
 
+    public Map<String,String> getPubmedIdsForAllGseAccessions() throws Exception {
+
+        String sql = "SELECT DISTINCT geo_accession_id,pubmed_id FROM rna_seq";
+        List<StringMapQuery.MapPair> list = StringMapQuery.execute( this, sql );
+        System.out.println("list: "+list.size());
+
+        Map<String, String> results = new HashMap<>();
+        for( StringMapQuery.MapPair pair: list ) {
+            String gseId = pair.keyValue;
+            String pubmedId = Utils.NVL(pair.stringValue, "");
+
+            String pubmedIdInHash = results.get(gseId);
+            if( pubmedIdInHash!=null ) {
+                if( pubmedIdInHash.equals(pubmedId) ) {
+                    System.out.println("problem");
+                }
+            }
+            results.put(gseId, pubmedId);
+        }
+
+        System.out.println("hash: "+results.size());
+        return results;
+    }
+
     // by default, CURATION_STATUS must be set to 'pending'
     public void insertRnaSeq(Series series){
         try {
@@ -47,7 +71,7 @@ public class RnaSeqDAO extends AbstractDAO {
             if (series.getPlatformList().size() != 0)
                 platformTechnology = series.getPlatformList().get(0).getTechnology();
 
-            boolean isDublicateLogged = false;
+            boolean isDuplicateLogged = false;
             for( int i = 0; i < series.getSampleList().size(); i++) {
                 Sample sample = series.getSampleList().get(i);
                 String sql = "INSERT INTO RNA_SEQ ( KEY, GEO_ACCESSION_ID, STUDY_TITLE, SUBMISSION_DATE, PUBMED_ID, SUMMARY, OVERALL_DESIGN, PLATFORM_ID, " +
@@ -100,19 +124,15 @@ public class RnaSeqDAO extends AbstractDAO {
                         sample.getRelation().getStoreStr(),                              /*30*/
                         series.getSupplementaryFile().getStoreStr()                      /*31*/
                 };
-                loggerColumnSize.info("----------------------------- " + series.getGeoAccessionID() + " --------------------------------------------------");
-                for (int j = 0; j < array.length; j++) {
-                    loggerColumnSize.info(j + " : " + (array[j] == null ? null : array[j].getClass() == String.class ? ((String) array[j]).length() : "int"));
-                }
-                loggerColumnSize.info("-------------------------------------------------------------------------------");
+
                 try {
                     this.update(sql, array);
                 } catch (DuplicateKeyException dke) {
                     // because of download indexes sometimes the same file could be inserted
                     // just log per file (not for all sample records in the series file) and ignore it
-                    if (!isDublicateLogged) { // in order to log per file
+                    if (!isDuplicateLogged) { // in order to log per file
                         loggerDuplicate.info(series.getGeoAccessionID()+" "+sample.getGeoAccessionID());
-                        isDublicateLogged = true;
+                        isDuplicateLogged = true;
                     }
                 }
             }
