@@ -1,3 +1,6 @@
+Aug 27, 2024
+  added module to determine new publications for rat
+
 Mar 19, 2024
   reduced logging
 

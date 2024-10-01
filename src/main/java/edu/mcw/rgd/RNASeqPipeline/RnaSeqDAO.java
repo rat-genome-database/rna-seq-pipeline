@@ -38,24 +38,29 @@ public class RnaSeqDAO extends AbstractDAO {
         return StringListQuery.execute(this, sql, gseAccId);
     }
 
-    public Map<String,String> getPubmedIdsForAllGseAccessions() throws Exception {
+    public Map<String,PubmedInfo> getPubmedIdsForAllGseAccessions( String species ) throws Exception {
 
-        String sql = "SELECT DISTINCT geo_accession_id,pubmed_id FROM rna_seq";
-        List<StringMapQuery.MapPair> list = StringMapQuery.execute( this, sql );
-        System.out.println("list: "+list.size());
+        Map<String, PubmedInfo> results = new HashMap<>();
 
-        Map<String, String> results = new HashMap<>();
-        for( StringMapQuery.MapPair pair: list ) {
-            String gseId = pair.keyValue;
-            String pubmedId = Utils.NVL(pair.stringValue, "");
+        String sql = "SELECT DISTINCT geo_accession_id,pubmed_id,curation_status FROM rna_seq WHERE sample_organism=?";
+        try( Connection conn = getConnection() ) {
+            PreparedStatement ps = conn.prepareStatement(sql);
+            ps.setString(1, species);
+            ResultSet rs = ps.executeQuery();
+            while( rs.next() ) {
+                PubmedInfo info = new PubmedInfo();
+                info.geoAcc = rs.getString(1);
+                info.pubMedId = Utils.NVL(rs.getString(2), "");
+                info.curationStatus = rs.getString(3);
 
-            String pubmedIdInHash = results.get(gseId);
-            if( pubmedIdInHash!=null ) {
-                if( pubmedIdInHash.equals(pubmedId) ) {
-                    System.out.println("problem");
+                PubmedInfo info2 = results.get(info.geoAcc);
+                if( info2!=null ) {
+                    if( info2.pubMedId.equals(info.pubMedId) ) {
+                        System.out.println("problem");
+                    }
                 }
+                results.put(info.geoAcc, info);
             }
-            results.put(gseId, pubmedId);
         }
 
         System.out.println("hash: "+results.size());
@@ -74,12 +79,14 @@ public class RnaSeqDAO extends AbstractDAO {
             boolean isDuplicateLogged = false;
             for( int i = 0; i < series.getSampleList().size(); i++) {
                 Sample sample = series.getSampleList().get(i);
-                String sql = "INSERT INTO RNA_SEQ ( KEY, GEO_ACCESSION_ID, STUDY_TITLE, SUBMISSION_DATE, PUBMED_ID, SUMMARY, OVERALL_DESIGN, PLATFORM_ID, " +
-                        "PLATFORM_NAME, PLATFORM_TECHNOLOGY, TOTAL_NUMBER_OF_SAMPLES, NUMBER_OF_RAT_SAMPLES, STUDY_RELATION, CONTRIBUTORS, SAMPLE_ACCESSION_ID, " +
-                        "SAMPLE_TITLE, SAMPLE_ORGANISM, SAMPLE_SOURCE, SAMPLE_CHARACTERISTICS, SAMPLE_STRAIN, SAMPLE_AGE, SAMPLE_GENDER, SAMPLE_TISSUE, " +
-                        "SAMPLE_CELL_TYPE, SAMPLE_CELL_LINE, SAMPLE_GROWTH_PROTOCOL, SAMPLE_EXTRACT_PROTOCOL, SAMPLE_TREATMENT_PROTOCOL, SAMPLE_DATA_PROCESSING, " +
-                        "SAMPLE_SUPPLEMENTARY_FILES, SAMPLE_RELATION, SUPPLEMENTARY_FILES, CURATION_STATUS ) " +
-                        "VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?, ?,'pending')";
+                String sql = """
+                    INSERT INTO RNA_SEQ ( KEY, GEO_ACCESSION_ID, STUDY_TITLE, SUBMISSION_DATE, PUBMED_ID, SUMMARY, OVERALL_DESIGN, PLATFORM_ID,
+                    PLATFORM_NAME, PLATFORM_TECHNOLOGY, TOTAL_NUMBER_OF_SAMPLES, NUMBER_OF_RAT_SAMPLES, STUDY_RELATION, CONTRIBUTORS, SAMPLE_ACCESSION_ID,
+                    SAMPLE_TITLE, SAMPLE_ORGANISM, SAMPLE_SOURCE, SAMPLE_CHARACTERISTICS, SAMPLE_STRAIN, SAMPLE_AGE, SAMPLE_GENDER, SAMPLE_TISSUE,
+                    SAMPLE_CELL_TYPE, SAMPLE_CELL_LINE, SAMPLE_GROWTH_PROTOCOL, SAMPLE_EXTRACT_PROTOCOL, SAMPLE_TREATMENT_PROTOCOL, SAMPLE_DATA_PROCESSING,
+                    SAMPLE_SUPPLEMENTARY_FILES, SAMPLE_RELATION, SUPPLEMENTARY_FILES, CURATION_STATUS )
+                    VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?, ?,'pending')
+                    """;
 
                 // skip samples for species that are not in RGD
                 String incomingOrganism = sample.getOrganism_ch1();
@@ -300,4 +307,9 @@ public class RnaSeqDAO extends AbstractDAO {
         }
     }
 
+    public class PubmedInfo {
+        public String geoAcc;
+        public String pubMedId;
+        public String curationStatus;
+    }
 }

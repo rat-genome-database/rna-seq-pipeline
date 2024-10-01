@@ -14,23 +14,34 @@ public class PubMedLoader {
 
     public static void main(String[] args) throws Exception {
 
+        try {
+            run();
+        } catch( Exception e ) {
+            Utils.printStackTrace(e, logPubmed);
+            throw new Exception(e);
+        }
+    }
+
+    public static void run() throws Exception {
+
         RnaSeqDAO dao = new RnaSeqDAO();
-        Map<String,String> gseToPubmedMap = dao.getPubmedIdsForAllGseAccessions();
+        Map<String, RnaSeqDAO.PubmedInfo> gseToPubmedMap = dao.getPubmedIdsForAllGseAccessions("Rattus norvegicus");
         logPubmed.info("processing GSE accessions: "+gseToPubmedMap.size());
 
         int pubmedIdsChanged = 0;
         int i = 0;
-        for( Map.Entry<String,String> entry: gseToPubmedMap.entrySet() ) {
+        for( Map.Entry<String, RnaSeqDAO.PubmedInfo> entry: gseToPubmedMap.entrySet() ) {
 
             String gseAccession = entry.getKey();
-            String pubmedIdInDb = entry.getValue();
+            RnaSeqDAO.PubmedInfo info = entry.getValue();
 
             ArrayList<String> pubmedIdListInGEO = getPubMedIds(gseAccession);
             String pubmedIdsInGEO = Utils.concatenate(pubmedIdListInGEO, ",");
 
-            if( !pubmedIdInDb.equals(pubmedIdsInGEO) ) {
+            String pubmedIdsInDb = info.pubMedId;
+            if( !pubmedIdsInDb.equals(pubmedIdsInGEO) ) {
                 pubmedIdsChanged++;
-                logPubmed.info(gseAccession+": OLD_PUBMED_IDS:"+pubmedIdInDb+",   NEW_PUBMED_IDS:"+pubmedIdsInGEO);
+                logPubmed.info(gseAccession+": STATUS="+info.curationStatus+"   OLD_PUBMED_IDS:"+pubmedIdsInDb+"   NEW_PUBMED_IDS:"+pubmedIdsInGEO);
             }
 
             System.out.println("... "+(++i)+"/"+gseToPubmedMap.size());
