@@ -1,3 +1,6 @@
+Jan 13, 2025
+  renamed distro to 'rna-seq-pipeline'
+
 Aug 27, 2024
   added module to determine new publications for rat
 
