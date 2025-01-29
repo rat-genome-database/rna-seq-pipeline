@@ -27,7 +27,6 @@ public class Manager {
     private byte numberOfMapperThreads;
     private byte numberOfDownloaderThreads;
     private int indexOfStopFolderForDownload;
-    private int numberOfFilesPerFolderOnNcbi;
     private byte downloaderMaxRetryCount;
     private byte downloaderDownloadRetryIntervalInSeconds;
     private int indexOfStartFolderForDownload;
@@ -130,7 +129,7 @@ public class Manager {
 
             DownloaderThread thread = new DownloaderThread(i,
                     new SoftFileDownloader(downloaderMaxRetryCount, downloaderDownloadRetryIntervalInSeconds, counters),
-                    new SoftFileParser(), new RnaSeqDAO(), numberOfFilesPerFolderOnNcbi, folderIndexList);
+                    new SoftFileParser(), new RnaSeqDAO(), folderIndexList);
 
             executor.execute(thread);
         }
@@ -180,14 +179,6 @@ public class Manager {
         return numberOfDownloaderThreads;
     }
 
-
-    public void setNumberOfFilesPerFolderOnNcbi(int numberOfFilesPerFolderOnNcbi) {
-        this.numberOfFilesPerFolderOnNcbi = numberOfFilesPerFolderOnNcbi;
-    }
-
-    public int getNumberOfFilesPerFolderOnNcbi() {
-        return numberOfFilesPerFolderOnNcbi;
-    }
 
     public void setDownloaderMaxRetryCount(byte downloaderMaxRetryCount) {
         this.downloaderMaxRetryCount = downloaderMaxRetryCount;
