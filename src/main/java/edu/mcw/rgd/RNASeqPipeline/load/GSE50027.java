@@ -109,8 +109,8 @@ public class GSE50027 {
             edu.mcw.rgd.datamodel.pheno.Sample s = new Sample();
             int sampleId = getSampleId(geoSampleAcc);
             if( sampleId==0 ) {
-                s.setAgeDaysFromHighBound(105);
-                s.setAgeDaysFromLowBound(105);
+                s.setAgeDaysFromHighBound((double)105);
+                s.setAgeDaysFromLowBound((double)105);
                 s.setNumberOfAnimals(1);
                 s.setNotes(col);
                 s.setSex("male");
