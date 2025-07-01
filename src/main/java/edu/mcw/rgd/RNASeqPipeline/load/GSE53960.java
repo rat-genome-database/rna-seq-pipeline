@@ -105,7 +105,7 @@ public class GSE53960 {
     void parseAge(Sample sample, String sampleAge) throws Exception {
         if( sampleAge.endsWith(" weeks") ) {
             String weeks = sampleAge.substring(0, sampleAge.length()-" weeks".length()).trim();
-            int ageInDays = 7 * Integer.parseInt(weeks);
+            double ageInDays = 7 * Double.parseDouble(weeks);
             sample.setAgeDaysFromHighBound(ageInDays);
             sample.setAgeDaysFromLowBound(ageInDays);
         } else {
