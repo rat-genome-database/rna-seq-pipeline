@@ -13,20 +13,18 @@ public class DownloaderThread implements Runnable {
     private final static Logger loggerSummary = LogManager.getLogger("summary");
     private int threadNum;
     private List<Integer> indexForFolderList;
-    private int maxNumOfFilesPerFolderOnNcbi;
     private RnaSeqDAO rnaSeqDao;
     private SoftFileDownloader softFileDownloader;
     private SoftFileParser softFileParser;
 
     public DownloaderThread(int threadNum, SoftFileDownloader softFileDownloader, SoftFileParser softFileParser, RnaSeqDAO rnaSeqDao,
-                            int maxNumOfFilesPerFolderOnNcbi, List<Integer> indexForFolderList){
+                            List<Integer> indexForFolderList){
+
         this.threadNum = threadNum;
         this.rnaSeqDao = rnaSeqDao;
         this.softFileDownloader = softFileDownloader;
-        this.maxNumOfFilesPerFolderOnNcbi = maxNumOfFilesPerFolderOnNcbi;
         this.indexForFolderList = indexForFolderList;
         this.softFileParser = softFileParser;
-
     }
 
     public void run() {
@@ -63,8 +61,8 @@ public class DownloaderThread implements Runnable {
                 if(!existingIds.contains(fileAccId)) {
                     loaded.add(fileAccId);
                     softFileName = softFileDownloader.downloadAndExtractSoftFile(directoryName, fileAccId);
-                    System.out.println(softFileName);
                     if (softFileName == null) continue;
+                    System.out.println(softFileName);
 
                     Series series = softFileParser.parse(softFileName, loggerSummary);
                     if (series != null)

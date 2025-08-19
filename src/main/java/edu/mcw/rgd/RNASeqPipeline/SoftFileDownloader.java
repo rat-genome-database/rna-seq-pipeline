@@ -18,10 +18,9 @@ public class SoftFileDownloader extends FileDownloader {
     private static final String SOFT_FILE_SUFFIX = "_family.soft.gz";
     private static String NCBI_GEO_SERIES_SOFT_FILES_FTP_LINK;
 
-    private CounterPool counters = new CounterPool();
+    private final CounterPool counters;
 
     private final static Logger loggerDownloaded = LogManager.getLogger("downloaded");
-    private final static Logger loggerEmpty = LogManager.getLogger("empty");
     private final static Logger loggerRgd = LogManager.getLogger("log_rgd");
 
     public SoftFileDownloader(byte maxRetryCount, byte downloadRetryIntervalInSeconds, CounterPool counters){
