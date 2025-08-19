@@ -29,12 +29,6 @@
                 <TimeBasedTriggeringPolicy interval="1"/>
             </Policies>
         </RollingFile>
-        <RollingFile name="empty" append="true" fileName="logs/empty.log" filePattern="logs/empty.log.%d{yyyy-MM}">
-            <PatternLayout pattern="[%d{yyyy-MM-dd HH:mm:ss}] - %m%n"/>
-            <Policies>
-                <TimeBasedTriggeringPolicy interval="1"/>
-            </Policies>
-        </RollingFile>
         <RollingFile name="duplicate" append="true" fileName="logs/duplicate.log" filePattern="logs/duplicate.log.%d{yyyy-MM}">
             <PatternLayout pattern="[%d{yyyy-MM-dd HH:mm:ss}] - %m%n"/>
             <Policies>
@@ -76,10 +70,6 @@
         <!-- monthly -->
         <Logger name="downloaded" level="debug" additivity="false">
             <AppenderRef ref="downloaded"/>
-            <AppenderRef ref="Console" level="info"/>
-        </Logger>
-        <Logger name="empty" level="debug" additivity="false">
-            <AppenderRef ref="empty"/>
             <AppenderRef ref="Console" level="info"/>
         </Logger>
         <Logger name="duplicate" level="debug" additivity="false">
