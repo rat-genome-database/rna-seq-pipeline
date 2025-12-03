@@ -206,10 +206,9 @@ public class Sample {
     }
 
     String getStrain() {
-        List<String> store = this.characteristics_ch1.store;
 
-        for (int i = 0; i < store.size(); i++) {
-            if (store.get(i).startsWith("strain")) return store.get(i).replaceFirst("^strain.*: ", "");
+        for ( String s: this.characteristics_ch1.store ) {
+            if (s.startsWith("strain")) return s.replaceFirst("^strain.*: ", "");
         }
 
         return null;
