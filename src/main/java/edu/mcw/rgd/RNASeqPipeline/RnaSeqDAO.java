@@ -6,7 +6,6 @@ package edu.mcw.rgd.RNASeqPipeline;
 
 import edu.mcw.rgd.dao.AbstractDAO;
 import edu.mcw.rgd.dao.spring.StringListQuery;
-import edu.mcw.rgd.dao.spring.StringMapQuery;
 import edu.mcw.rgd.datamodel.SpeciesType;
 import edu.mcw.rgd.process.Utils;
 import org.apache.logging.log4j.LogManager;
@@ -98,38 +97,38 @@ public class RnaSeqDAO extends AbstractDAO {
                 int key = this.getNextKey("GEO_SEQ");
 
                 Object[] array = new Object[]{
-                        Integer.valueOf(key),                                       /*0*/
-                        series.getGeoAccessionID(),                                      /*1*/
-                        series.getTitle(),                                               /*2*/
-                        series.getSubmissionDate(),                                      /*3*/
-                        series.getPubmedID(),                                            /*4*/
-                        series.getSummary(),                                             /*5*/
-                        series.getOverallDesign().getStoreStr().replace("||||", "||"),   /*6*/
-                        series.getPlatformID(),                                          /*7*/
-                        series.findPlatformName(sample.getPlatformID()),                 /*8*/
-                        platformTechnology,                                         /*9*/
-                        series.getSampleID().getStoreLength(),                           /*10*/
-                        series.getNumRatSamples(),                                  /*11*/
-                        series.getRelation().getStoreStr(),                              /*12*/
-                        series.getContributor().getStoreStr(),                           /*13*/
-                        sample.getGeoAccessionID(),                                      /*14*/
-                        sample.getTitle(),                                               /*15*/
-                        sample.getOrganism_ch1(),                                        /*16*/
-                        sample.getSourceName_ch1(),                                      /*17*/
-                        sample.getCharacteristics_ch1().getStoreStr(),                   /*18*/
-                        sample.getStrain(),                                              /*19*/
-                        sample.getAge(),                                                 /*20*/
-                        sample.getGender(),                                             /*21*/
-                        sample.getTissue(),                                             /*22*/
-                        sample.getCellType(),                                           /*23*/
-                        sample.getCellLine(),                                           /*24*/
-                        sample.getGrowthProtocol_ch1().getStoreStr(),                    /*25*/
-                        sample.getExtractProtocol_ch1().getStoreStr(),                   /*26*/
-                        sample.getTreatmentProtocol_ch1(),                               /*27*/
-                        sample.getDataProcessing().getStoreStr(),                        /*28*/
-                        sample.getSupplementaryFile().getStoreStr(),                     /*29*/
-                        sample.getRelation().getStoreStr(),                              /*30*/
-                        series.getSupplementaryFile().getStoreStr()                      /*31*/
+                    key,                                                /*0*/
+                    series.getGeoAccessionID(),                         /*1*/
+                    series.getTitle(),                                  /*2*/
+                    series.getSubmissionDate(),                         /*3*/
+                    series.getPubmedID(),                               /*4*/
+                    series.getSummary(),                                /*5*/
+                    series.getOverallDesign().getStoreStr().replace("||||", "||"),   /*6*/
+                    series.getPlatformID(),                             /*7*/
+                    series.findPlatformName(sample.getPlatformID()),    /*8*/
+                    platformTechnology,                                 /*9*/
+                    series.getSampleID().getStoreLength(),              /*10*/
+                    series.getNumRatSamples(),                          /*11*/
+                    series.getRelation().getStoreStr(),                 /*12*/
+                    series.getContributor().getStoreStr(),              /*13*/
+                    sample.getGeoAccessionID(),                         /*14*/
+                    sample.getTitle(),                                  /*15*/
+                    sample.getOrganism_ch1(),                           /*16*/
+                    sample.getSourceName_ch1(),                         /*17*/
+                    sample.getCharacteristics_ch1().getStoreStr(),      /*18*/
+                    sample.getStrain(),                                 /*19*/
+                    sample.getAge(),                                    /*20*/
+                    sample.getGender(),                                 /*21*/
+                    sample.getTissue(),                                 /*22*/
+                    sample.getCellType(),                               /*23*/
+                    sample.getCellLine(),                               /*24*/
+                    sample.getGrowthProtocol_ch1().getStoreStr(),       /*25*/
+                    sample.getExtractProtocol_ch1().getStoreStr(),      /*26*/
+                    sample.getTreatmentProtocol_ch1(),                  /*27*/
+                    sample.getDataProcessing().getStoreStr(),           /*28*/
+                    sample.getSupplementaryFile().getStoreStr(),        /*29*/
+                    sample.getRelation().getStoreStr(),                 /*30*/
+                    series.getSupplementaryFile().getStoreStr()         /*31*/
                 };
 
                 try {
@@ -241,34 +240,6 @@ public class RnaSeqDAO extends AbstractDAO {
         return update(sql, rnaSeq.getRgdStrainRgdId(), rnaSeq.getKey());
     }
 
-    /**
-     * Update rnaSeq in the database based on key
-     *
-     * @param rnaSeq
-     * @throws Exception
-     */
-    public void updateRnaSeq(RnaSeq rnaSeq) throws Exception{
-
-        String sql = "update RnaSeq set GEO_ACCESSION_ID=?, STUDY_TITLE=?, SUBMISSION_DATE=?, " +
-                "PUBMED_ID=?, PLATFORM_ID=?, PLATFORM_NAME=?, PLATFORM_TECHNOLOGY=?, TOTAL_NUMBER_OF_SAMPLES=?, NUMBER_OF_RAT_SAMPLES=?, CONTRIBUTORS=?,  SAMPLE_ACCESSION_ID=?, " +
-                "SAMPLE_TITLE=?, SAMPLE_ORGANISM=?, SAMPLE_SOURCE=?, SAMPLE_AGE=?, SAMPLE_GENDER=?, SAMPLE_CELL_TYPE=?, OVERALL_DESIGN=?, " +
-                "SAMPLE_EXTRACT_PROTOCOL=?, SAMPLE_TREATMENT_PROTOCOL=?, SUMMARY=?, SAMPLE_DATA_PROCESSING=?, SAMPLE_SUPPLEMENTARY_FILES=?, SAMPLE_CHARACTERISTICS=?, " +
-                "SAMPLE_RELATION=?, SAMPLE_STRAIN=?, SAMPLE_CELL_LINE=? , SAMPLE_GROWTH_PROTOCOL=?, STUDY_RELATION=?, SAMPLE_TISSUE=?,  RGD_TISSUE_TERM_ACC=?, " +
-                "RGD_CELL_TERM_ACC=?, RGD_STRAIN_TERM_ACC=?, RGD_STRAIN_RGD_ID=?  where KEY=?";
-
-        Object[] oa = new Object[]{rnaSeq.getGeoAccessionId(), rnaSeq.getStudyTitle(), rnaSeq.getSubmissionDate(), rnaSeq.getPubmedId(), rnaSeq.getPlatformId(),
-                rnaSeq.getPlatformId(), rnaSeq.getPlatformName(), rnaSeq.getTotalNumberOfSamples(), rnaSeq.getNumberOfRatSamples(), rnaSeq.getContributors(),
-                rnaSeq.getSampleAccessionId(), rnaSeq.getSampleTitle(), rnaSeq.getSampleOrganism(), rnaSeq.getSampleSource(), rnaSeq.getSampleAge(),
-                rnaSeq.getSampleGender(), rnaSeq.getSampleCellType(), rnaSeq.getOverallDesign(), rnaSeq.getSampleExtractionProtocol(),
-                rnaSeq.getSampleTreatmentProtocol(), rnaSeq.getSummary(), rnaSeq.getSampleDataProcessing(), rnaSeq.getSampleSupplementaryFiles(),
-                rnaSeq.getSampleCharacteristics(), rnaSeq.getSampleRelation(), rnaSeq.getSampleStrain(), rnaSeq.getSampleCellLine(), rnaSeq.getSampleGrowthProtocol(),
-                rnaSeq.getStudyRelation(), rnaSeq.getSampleTissue(), rnaSeq.getRgdTissueTermAcc(), rnaSeq.getRgdCellTermAcc(),
-                rnaSeq.getRgdStrainTermAcc(), rnaSeq.getRgdStrainRgdId(), rnaSeq.getKey()};
-
-        update(sql, oa);
-
-    }
-
     public void setCrossSpeciesAnatomyOntId(String crossSpeciesAnatomyOntId) {
         this.crossSpeciesAnatomyOntId = crossSpeciesAnatomyOntId;
     }
@@ -299,12 +270,6 @@ public class RnaSeqDAO extends AbstractDAO {
 
     public String getRatStrainsOntId() {
         return ratStrainsOntId;
-    }
-
-    public class RnaSeqDAOException extends Exception {
-        public RnaSeqDAOException(String msg) {
-            super(msg);
-        }
     }
 
     public class PubmedInfo {

@@ -33,19 +33,6 @@ class Subtype {
         return this.getStore(this.setStoreIndex());
     }
 
-    String writeStore() {
-        if (this.getStoreLength() == 0) return "";
-
-        String text = "";
-
-        for (int i = 0; i < this.getStoreLength(); i++) {
-            if (i == this.getStoreLength() - 1) text += this.getStore(i);
-            else text += this.getStore(i) + "||";
-        }
-
-        return text;
-    }
-
     String getStoreStr() {
         if (this.getStoreLength() == 0) return "";
 
