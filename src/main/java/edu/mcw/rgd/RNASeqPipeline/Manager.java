@@ -9,10 +9,11 @@ import org.springframework.beans.factory.support.DefaultListableBeanFactory;
 import org.springframework.beans.factory.xml.XmlBeanDefinitionReader;
 import org.springframework.core.io.FileSystemResource;
 
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
+import java.util.Locale;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
@@ -34,6 +35,7 @@ public class Manager {
     private boolean performDownload;
     private boolean performMapping;
     private String ncbiSoftFilesFtpLink;
+    private String analysisCutoffDate;
 
 
     public static void main(String[] args) throws Exception {
@@ -60,10 +62,10 @@ public class Manager {
             }
         }
         try {
-            // set cutoff date for ontology analysis to Apr 1, 2023
-            Calendar cal = Calendar.getInstance();
-            cal.set(2023, 4-1, 1);
-            Date analysisCutoffDate = cal.getTime();
+            // parse cutoff date from AppConfigure.xml, e.g. "Apr 1, 2023"
+            SimpleDateFormat sdf = new SimpleDateFormat("MMM d, yyyy", Locale.ENGLISH);
+            Date analysisCutoffDate = sdf.parse(manager.getAnalysisCutoffDate());
+            loggerSummary.info("Analysis cutoff date: " + sdf.format(analysisCutoffDate));
 
             manager.run(analysisCutoffDate);
 
@@ -226,6 +228,14 @@ public class Manager {
 
     public String getNcbiSoftFilesFtpLink() {
         return ncbiSoftFilesFtpLink;
+    }
+
+    public void setAnalysisCutoffDate(String analysisCutoffDate) {
+        this.analysisCutoffDate = analysisCutoffDate;
+    }
+
+    public String getAnalysisCutoffDate() {
+        return analysisCutoffDate;
     }
 
     public int getIndexOfStopFolderForDownload() {
