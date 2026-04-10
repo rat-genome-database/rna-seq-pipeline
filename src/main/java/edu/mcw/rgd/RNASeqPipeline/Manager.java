@@ -1,6 +1,7 @@
 package edu.mcw.rgd.RNASeqPipeline;
 
 import edu.mcw.rgd.process.CounterPool;
+import edu.mcw.rgd.process.MemoryMonitor;
 import edu.mcw.rgd.process.Utils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -43,6 +44,10 @@ public class Manager {
         manager.init(bf);
 
         Date time0 = new Date();
+
+        MemoryMonitor memoryMonitor = new MemoryMonitor();
+        memoryMonitor.start();
+
         for( int i=0; i<args.length; i++ ) {
             String arg = args[i];
             switch (arg) {
@@ -65,6 +70,9 @@ public class Manager {
         } catch (Exception e) {
             e.printStackTrace();
             throw e;
+        } finally {
+            memoryMonitor.stop();
+            loggerSummary.info(memoryMonitor.getSummary());
         }
 
         loggerSummary.info("========== Elapsed time " + Utils.formatElapsedTime(time0.getTime(), System.currentTimeMillis()) + ". ==========");

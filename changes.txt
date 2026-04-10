@@ -1,3 +1,9 @@
+Apr 10, 2026
+  added MemoryMonitor (covers both loader and analyzer)
+  run.sh: unset exported bash functions to fix Dragon Toolkit env parser crash
+  bumped indexOfStopFolderForDownload to 327
+  updated dependencies
+
 Dec 15, 2025
   code cleanup
 
