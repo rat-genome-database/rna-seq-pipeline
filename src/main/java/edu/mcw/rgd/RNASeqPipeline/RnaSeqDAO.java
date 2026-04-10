@@ -172,7 +172,7 @@ public class RnaSeqDAO extends AbstractDAO {
             String sql = "select KEY,SAMPLE_TISSUE, SAMPLE_STRAIN, SAMPLE_CELL_LINE, SAMPLE_CELL_TYPE, RGD_TISSUE_TERM_ACC, RGD_CELL_TERM_ACC, RGD_STRAIN_TERM_ACC, RGD_STRAIN_RGD_ID " +
                     "FROM rna_seq where LOWER(sample_organism) IN ("+organismList+") " +
                     "AND geo_accession_id not in ('GSE50027','GSE53960') " +
-                    "AND created_in_rgd>? AND date_mapped IS NULL";
+                    "AND created_in_rgd>? AND date_mapped IS NULL AND curation_status='pending'";
 
             PreparedStatement ps = conn.prepareStatement(sql);
             ps.setTimestamp(1, new Timestamp(dateCutoff.getTime()));

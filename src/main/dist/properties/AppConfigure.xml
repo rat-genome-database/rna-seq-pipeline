@@ -12,6 +12,7 @@
 		<property name="downloaderDownloadRetryIntervalInSeconds" value="5"/>
 		<property name="performDownload" value="true"/>
 		<property name="performMapping" value="true"/>
+		<property name="analysisCutoffDate" value="Apr 1, 2023"/><!-- (re)map all rows created after this date -->
 	</bean>
 	<bean id="rnaSeqDao" class="edu.mcw.rgd.RNASeqPipeline.RnaSeqDAO">
 		<property name="crossSpeciesAnatomyOntId" value="UBERON"/>
