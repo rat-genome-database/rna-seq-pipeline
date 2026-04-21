@@ -1,12 +1,12 @@
 <!DOCTYPE beans PUBLIC "-//SPRING//DTD BEAN//EN" "http://www.springframework.org/dtd/spring-beans.dtd">
 <beans>
 	<bean id="main" class="edu.mcw.rgd.RNASeqPipeline.Manager">
-		<property name="version" value="rna-seq-pipeline -- build Apr 10, 2026" />
+		<property name="version" value="rna-seq-pipeline -- build Apr 21, 2026" />
 		<property name="ncbiSoftFilesFtpLink" value="ftp://ftp.ncbi.nlm.nih.gov/geo/series/"/>
 		<property name="indexOfStartFolderForDownload" value="0"/> <!-- default is 0; applies to first thread only -->
 		<property name="indexOfStopFolderForDownload" value="327"/> <!-- applies to last thread only; 327 was last series available in geo as of Apr 10, 2026 -->
 		<property name="rnaSeqToRgdMapper" ref="rnaSeqToRgdMapper"/>
-		<property name="numberOfMapperThreads" value="10"/><!-- default is 10; so far best performance is got with 10 threads -->
+		<property name="numberOfMapperThreads" value="2"/><!-- default is 10 for best performance; but too much cpu burn on the server -->
 		<property name="numberOfDownloaderThreads" value="5"/><!-- default was 10 -->
 		<property name="downloaderMaxRetryCount" value="3"/><!-- at each try, downloader increases wait time by 2 times starting from intervalInSeconds -->
 		<property name="downloaderDownloadRetryIntervalInSeconds" value="5"/>

@@ -1,3 +1,6 @@
+Apr 21, 2026
+  updated README.md; updated dependencies
+
 Apr 10, 2026
   added MemoryMonitor (covers both loader and analyzer)
   run.sh: unset exported bash functions to fix Dragon Toolkit env parser crash
