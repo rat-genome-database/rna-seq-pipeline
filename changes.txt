@@ -1,3 +1,6 @@
+Apr 22, 2026
+  bug fix: NPE in DownloaderThread on parse failure
+
 Apr 21, 2026
   updated README.md; updated dependencies
 

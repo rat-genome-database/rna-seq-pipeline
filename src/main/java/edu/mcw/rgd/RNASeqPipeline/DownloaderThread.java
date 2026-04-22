@@ -65,15 +65,16 @@ public class DownloaderThread implements Runnable {
                     System.out.println(softFileName);
 
                     Series series = softFileParser.parse(softFileName, loggerSummary);
-                    if (series != null)
-                        rnaSeqDao.insertRnaSeq(series);
-                    else
-                        loggerSummary.error("Parse error : " + softFileName);
 
                     // remove the file after use (*soft* files take up *a lot* of disk space)
                     new File(softFileName).delete();
 
-                    loggerSummary.info("Updated: "+series.getGeoAccessionID());
+                    if (series == null) {
+                        loggerSummary.error("Parse error : " + softFileName);
+                        continue;
+                    }
+                    rnaSeqDao.insertRnaSeq(series);
+                    loggerSummary.info("Updated: " + series.getGeoAccessionID());
                 }
             }
             loggerSummary.info("Loaded for folder " + directoryName+ " : "+ loaded.size());
