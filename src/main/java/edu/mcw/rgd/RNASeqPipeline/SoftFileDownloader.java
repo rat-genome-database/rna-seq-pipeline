@@ -1,22 +1,36 @@
 package edu.mcw.rgd.RNASeqPipeline;
 
 import edu.mcw.rgd.process.CounterPool;
-import edu.mcw.rgd.process.FileDownloader;
+import edu.mcw.rgd.process.FileDownloader2;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.apache.commons.net.ftp.FTPClient;
-import org.apache.commons.net.ftp.FTPFile;
 
-import java.io.*;
+import java.net.URI;
+import java.net.http.HttpClient;
+import java.net.http.HttpRequest;
+import java.net.http.HttpResponse;
+import java.nio.charset.StandardCharsets;
+import java.time.Duration;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * Created by cdursun on 5/10/2017.
+ * <p>
+ * Downloads GEO series SOFT files from NCBI over HTTP(S). NCBI serves the GEO ftp tree over https
+ * (e.g. https://ftp.ncbi.nlm.nih.gov/geo/series/), so both the file download and the directory
+ * listing use HTTP -- the listing parses the server's autoindex HTML.
  */
-public class SoftFileDownloader extends FileDownloader {
+public class SoftFileDownloader extends FileDownloader2 {
     private static final String DATA_DIRECTORY = "data/";
     private static final String SOFT_FILE_PREFIX = "GSE";
     private static final String SOFT_FILE_SUFFIX = "_family.soft.gz";
     private static String NCBI_GEO_SERIES_SOFT_FILES_FTP_LINK;
+
+    // autoindex entry for a GEO series sub-directory, e.g. <a href="GSE123/">GSE123/</a>
+    private static final Pattern DIR_LINK = Pattern.compile("href=\"(GSE\\d+)/\"", Pattern.CASE_INSENSITIVE);
 
     private final CounterPool counters;
 
@@ -58,46 +72,36 @@ public class SoftFileDownloader extends FileDownloader {
     }
 
     /**
-     * list files for the current working directory
-     * @return list of file names
-     * @throws Exception when unexpected things happen
+     * list the GEO series sub-directories for the current external url (the grouping folder),
+     * by reading the server's autoindex page over HTTP and parsing the directory links
+     * @return list of GSE accession directory names (f.e. GSE1, GSE10, ...)
+     * @throws Exception when the listing cannot be retrieved
      */
     public String[] listFiles() throws Exception {
-        loggerRgd.info("Listing contents of " + this.getExternalFile());
+        String url = this.getExternalFile();
+        loggerRgd.info("Listing contents of " + url);
 
-        // we must break the url into server part and the rest
-        int slashPos = this.getExternalFile().indexOf('/', 6); // look for '/' pos skipping initial 'ftp://'
-        if( slashPos<0 )
-            throw new Exception("malformed ftp url");
+        HttpClient client = HttpClient.newBuilder()
+                .followRedirects(HttpClient.Redirect.NORMAL)
+                .connectTimeout(Duration.ofSeconds(60))
+                .build();
+        HttpRequest request = HttpRequest.newBuilder(URI.create(url))
+                .timeout(Duration.ofSeconds(120))
+                .header("User-Agent", "RGD-rna-seq-pipeline")
+                .GET()
+                .build();
 
-        String ftpServer = this.getExternalFile().substring(6, slashPos);
-        String ftpFile = this.getExternalFile().substring(slashPos);
-
-        FTPClient client = new FTPClient();
-
-        try {
-            // try to connect and log-in as anonymous to ftp server
-            doFtpConnect(client, ftpServer);
-            client.changeWorkingDirectory(this.getExternalFile().substring(slashPos));
-
-            // get list of directories
-            FTPFile[] ftpFiles = client.listDirectories();
-            String[] fileNames = new String[ftpFiles.length];
-            for( int i=0; i<ftpFiles.length; i++ ) {
-                fileNames[i] = ftpFiles[i].getName();
-            }
-
-            // return the list of file names
-            return fileNames;
+        HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString(StandardCharsets.UTF_8));
+        if( response.statusCode() != 200 ) {
+            throw new Exception("listing " + url + " returned HTTP " + response.statusCode());
         }
-        finally {
-            try {
-                client.disconnect();
-            } catch (IOException e) {
-                e.printStackTrace();
-                loggerRgd.debug("ftp close/disconnect: "+e.getMessage()+" "+e.toString());
-            }
+
+        List<String> fileNames = new ArrayList<>();
+        Matcher m = DIR_LINK.matcher(response.body());
+        while( m.find() ) {
+            fileNames.add(m.group(1));
         }
+        return fileNames.toArray(new String[0]);
     }
 
     public static void setGeoSoftFilesFtpLink(String ftpLink) {

@@ -1,3 +1,6 @@
+Jun 8, 2026
+  SoftFileDownloader: switched GEO soft file download and directory listing from FTP to HTTP (FileDownloader2); updated dependencies
+
 Apr 22, 2026
   bug fix: NPE in DownloaderThread on parse failure
 
