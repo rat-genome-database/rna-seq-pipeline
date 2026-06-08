@@ -1,5 +1,7 @@
 Jun 8, 2026
   SoftFileDownloader: switched GEO soft file download and directory listing from FTP to HTTP (FileDownloader2); updated dependencies
+  download: retry directory listing on transient failure, and log the cause when a folder is skipped
+  download: run one folder at a time (removed the multi-threaded downloader; DownloaderThread -> SoftFileLoader)
 
 Apr 22, 2026
   bug fix: NPE in DownloaderThread on parse failure

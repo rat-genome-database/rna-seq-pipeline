@@ -10,13 +10,8 @@ import org.springframework.beans.factory.xml.XmlBeanDefinitionReader;
 import org.springframework.core.io.FileSystemResource;
 
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
 import java.util.Date;
-import java.util.List;
 import java.util.Locale;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.TimeUnit;
 
 /**
  * Created by cdursun on 5/19/2017.
@@ -27,7 +22,6 @@ public class Manager {
 
     private RnaSeqToRgdMapper rnaSeqToRgdMapper;
     private byte numberOfMapperThreads;
-    private byte numberOfDownloaderThreads;
     private int indexOfStopFolderForDownload;
     private byte downloaderMaxRetryCount;
     private byte downloaderDownloadRetryIntervalInSeconds;
@@ -118,34 +112,20 @@ public class Manager {
         CounterPool counters = new CounterPool();
 
         SoftFileDownloader.setGeoSoftFilesFtpLink(ncbiSoftFilesFtpLink);
-        ExecutorService executor = Executors.newFixedThreadPool(numberOfDownloaderThreads);
 
-        
-        Object[] threadData = new Object[numberOfDownloaderThreads];
-        for (int i = 0; i < numberOfDownloaderThreads ; i++) {
-            threadData[i] = new ArrayList<Integer>();
-        }
-        int threadSlot = -1;
+        // downloads run one folder at a time (single-threaded by design, to be gentle on NCBI)
+        SoftFileLoader loader = new SoftFileLoader(
+                new SoftFileDownloader(downloaderMaxRetryCount, downloaderDownloadRetryIntervalInSeconds, counters),
+                new SoftFileParser(), new RnaSeqDAO());
+
         for( int folderIndex = indexOfStartFolderForDownload; folderIndex <= indexOfStopFolderForDownload; folderIndex++ ) {
-            threadSlot = (threadSlot + 1) % threadData.length;
-
-            List<Integer> list = (List<Integer>) threadData[threadSlot];
-            list.add( folderIndex );
+            try {
+                loader.processFolder(folderIndex);
+            } catch( Exception e ) {
+                // one folder's unexpected failure should not abort the rest of the run
+                loggerSummary.error("Folder processing error : skipping folder index " + folderIndex, e);
+            }
         }
-
-        for (int i = 0; i < numberOfDownloaderThreads ; i++) {
-            System.out.println("Starting thread "+ i);
-            List<Integer> folderIndexList = (List<Integer>) threadData[i];
-
-            DownloaderThread thread = new DownloaderThread(i,
-                    new SoftFileDownloader(downloaderMaxRetryCount, downloaderDownloadRetryIntervalInSeconds, counters),
-                    new SoftFileParser(), new RnaSeqDAO(), folderIndexList);
-
-            executor.execute(thread);
-        }
-
-        executor.shutdown();
-        executor.awaitTermination(Integer.MAX_VALUE, TimeUnit.SECONDS);
 
         loggerSummary.info("Total number of files downloaded: " + counters.get("numberOfDownloadedFiles"));
         loggerSummary.info("Total number of empty files : " + counters.get("numberOfEmptyFiles"));
@@ -180,15 +160,6 @@ public class Manager {
     public byte getNumberOfMapperThreads() {
         return numberOfMapperThreads;
     }
-
-    public void setNumberOfDownloaderThreads(byte numberOfDownloaderThreads) {
-        this.numberOfDownloaderThreads = numberOfDownloaderThreads;
-    }
-
-    public byte getNumberOfDownloaderThreads() {
-        return numberOfDownloaderThreads;
-    }
-
 
     public void setDownloaderMaxRetryCount(byte downloaderMaxRetryCount) {
         this.downloaderMaxRetryCount = downloaderMaxRetryCount;

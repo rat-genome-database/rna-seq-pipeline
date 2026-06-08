@@ -81,6 +81,27 @@ public class SoftFileDownloader extends FileDownloader2 {
         String url = this.getExternalFile();
         loggerRgd.info("Listing contents of " + url);
 
+        // retry transient failures so a momentary network blip does not skip an entire folder
+        // (~1000 series); reuses the same retry budget as the file download path
+        int maxAttempts = Math.max(1, getMaxRetryCount());
+        int retryIntervalInSeconds = getDownloadRetryInterval();
+        Exception lastError = null;
+
+        for( int attempt=1; attempt<=maxAttempts; attempt++ ) {
+            try {
+                return listFilesOnce(url);
+            } catch( Exception e ) {
+                lastError = e;
+                loggerRgd.warn("listing attempt "+attempt+"/"+maxAttempts+" failed for "+url+" : "+e);
+                if( attempt<maxAttempts ) {
+                    Thread.sleep(retryIntervalInSeconds * 1000L);
+                }
+            }
+        }
+        throw new Exception("failed to list "+url+" after "+maxAttempts+" attempts", lastError);
+    }
+
+    private String[] listFilesOnce(String url) throws Exception {
         HttpClient client = HttpClient.newBuilder()
                 .followRedirects(HttpClient.Redirect.NORMAL)
                 .connectTimeout(Duration.ofSeconds(60))

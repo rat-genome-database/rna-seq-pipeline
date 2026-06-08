@@ -3,12 +3,11 @@
 	<bean id="main" class="edu.mcw.rgd.RNASeqPipeline.Manager">
 		<property name="version" value="rna-seq-pipeline -- build Jun 8, 2026" />
 		<property name="ncbiSoftFilesFtpLink" value="https://ftp.ncbi.nlm.nih.gov/geo/series/"/>
-		<property name="indexOfStartFolderForDownload" value="0"/> <!-- default is 0; applies to first thread only -->
-		<property name="indexOfStopFolderForDownload" value="334"/> <!-- applies to last thread only; 334 was last series available in geo as of Jun 08, 2026 -->
+		<property name="indexOfStartFolderForDownload" value="0"/> <!-- first GEO grouping folder index to download -->
+		<property name="indexOfStopFolderForDownload" value="334"/> <!-- last GEO grouping folder index; 334 was last series available in geo as of Jun 08, 2026 -->
 		<property name="rnaSeqToRgdMapper" ref="rnaSeqToRgdMapper"/>
 		<property name="numberOfMapperThreads" value="2"/><!-- default is 10 for best performance; but too much cpu burn on the server -->
-		<property name="numberOfDownloaderThreads" value="5"/><!-- default was 10 -->
-		<property name="downloaderMaxRetryCount" value="3"/><!-- at each try, downloader increases wait time by 2 times starting from intervalInSeconds -->
+		<property name="downloaderMaxRetryCount" value="3"/><!-- downloads/listings run one at a time; retries on transient failure -->
 		<property name="downloaderDownloadRetryIntervalInSeconds" value="5"/>
 		<property name="performDownload" value="true"/>
 		<property name="performMapping" value="true"/>
