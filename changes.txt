@@ -1,3 +1,6 @@
+Jul 15, 2026
+  download: discover the highest GEO grouping folder from the live root listing at runtime and download through it (logged during parsing), replacing the fixed indexOfStart/StopFolderForDownload properties
+
 Jun 8, 2026
   SoftFileDownloader: switched GEO soft file download and directory listing from FTP to HTTP (FileDownloader2); updated dependencies
   download: retry directory listing on transient failure, and log the cause when a folder is skipped

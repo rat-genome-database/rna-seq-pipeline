@@ -22,10 +22,8 @@ public class Manager {
 
     private RnaSeqToRgdMapper rnaSeqToRgdMapper;
     private byte numberOfMapperThreads;
-    private int indexOfStopFolderForDownload;
     private byte downloaderMaxRetryCount;
     private byte downloaderDownloadRetryIntervalInSeconds;
-    private int indexOfStartFolderForDownload;
     private boolean performDownload;
     private boolean performMapping;
     private String ncbiSoftFilesFtpLink;
@@ -44,17 +42,6 @@ public class Manager {
         MemoryMonitor memoryMonitor = new MemoryMonitor();
         memoryMonitor.start();
 
-        for( int i=0; i<args.length; i++ ) {
-            String arg = args[i];
-            switch (arg) {
-                case "--start":
-                    manager.indexOfStartFolderForDownload = Integer.parseInt(args[++i]);
-                    break;
-                case "--stop":
-                    manager.indexOfStopFolderForDownload = Integer.parseInt(args[++i]);
-                    break;
-            }
-        }
         try {
             // parse cutoff date from AppConfigure.xml, e.g. "Apr 1, 2023"
             SimpleDateFormat sdf = new SimpleDateFormat("MMM d, yyyy", Locale.ENGLISH);
@@ -114,11 +101,16 @@ public class Manager {
         SoftFileDownloader.setGeoSoftFilesFtpLink(ncbiSoftFilesFtpLink);
 
         // downloads run one folder at a time (single-threaded by design, to be gentle on NCBI)
-        SoftFileLoader loader = new SoftFileLoader(
-                new SoftFileDownloader(downloaderMaxRetryCount, downloaderDownloadRetryIntervalInSeconds, counters),
-                new SoftFileParser(), new RnaSeqDAO());
+        SoftFileDownloader downloader = new SoftFileDownloader(downloaderMaxRetryCount, downloaderDownloadRetryIntervalInSeconds, counters);
+        SoftFileLoader loader = new SoftFileLoader(downloader, new SoftFileParser(), new RnaSeqDAO());
 
-        for( int folderIndex = indexOfStartFolderForDownload; folderIndex <= indexOfStopFolderForDownload; folderIndex++ ) {
+        // determine how many GEO grouping folders to download from the live root listing, so the run
+        // always covers every series up to the newest one currently in GEO (no fixed start/stop props)
+        int highestFolderIndex = downloader.getHighestFolderIndex();
+        loggerSummary.info("Highest GEO series grouping folder: " + SoftFileDownloader.getNcbiDirectoryName(highestFolderIndex)
+                + " (index " + highestFolderIndex + ")");
+
+        for( int folderIndex = 0; folderIndex <= highestFolderIndex; folderIndex++ ) {
             try {
                 loader.processFolder(folderIndex);
             } catch( Exception e ) {
@@ -207,22 +199,6 @@ public class Manager {
 
     public String getAnalysisCutoffDate() {
         return analysisCutoffDate;
-    }
-
-    public int getIndexOfStopFolderForDownload() {
-        return indexOfStopFolderForDownload;
-    }
-
-    public void setIndexOfStopFolderForDownload(int indexOfStopFolderForDownload) {
-        this.indexOfStopFolderForDownload = indexOfStopFolderForDownload;
-    }
-
-    public int getIndexOfStartFolderForDownload() {
-        return indexOfStartFolderForDownload;
-    }
-
-    public void setIndexOfStartFolderForDownload(int indexOfStartFolderForDownload) {
-        this.indexOfStartFolderForDownload = indexOfStartFolderForDownload;
     }
 
     public boolean isPerformDownload() {

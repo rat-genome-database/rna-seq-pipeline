@@ -32,6 +32,10 @@ public class SoftFileDownloader extends FileDownloader2 {
     // autoindex entry for a GEO series sub-directory, e.g. <a href="GSE123/">GSE123/</a>
     private static final Pattern DIR_LINK = Pattern.compile("href=\"(GSE\\d+)/\"", Pattern.CASE_INSENSITIVE);
 
+    // autoindex entry for a GEO series grouping folder, e.g. <a href="GSEnnn/"> (index 0) or
+    // <a href="GSE334nnn/"> (index 334); the captured digits are the thousands-block index
+    private static final Pattern FOLDER_LINK = Pattern.compile("href=\"GSE(\\d*)nnn/\"", Pattern.CASE_INSENSITIVE);
+
     private final CounterPool counters;
 
     private final static Logger loggerDownloaded = LogManager.getLogger("downloaded");
@@ -78,18 +82,54 @@ public class SoftFileDownloader extends FileDownloader2 {
      * @throws Exception when the listing cannot be retrieved
      */
     public String[] listFiles() throws Exception {
-        String url = this.getExternalFile();
+        String body = fetchListing(this.getExternalFile());
+
+        List<String> fileNames = new ArrayList<>();
+        Matcher m = DIR_LINK.matcher(body);
+        while( m.find() ) {
+            fileNames.add(m.group(1));
+        }
+        return fileNames.toArray(new String[0]);
+    }
+
+    /**
+     * Determine the highest GEO series grouping-folder index available at the FTP root series listing.
+     * Folders are named GSEnnn (index 0), GSE1nnn (1), GSE2nnn (2), ... GSE334nnn (334); this reads the
+     * root autoindex and returns the largest index found, so the caller can download every folder up to
+     * the newest series currently in GEO (replacing the old fixed start/stop-folder properties).
+     * @return the highest grouping-folder index
+     * @throws Exception when the listing cannot be retrieved or contains no GEO series folders
+     */
+    public int getHighestFolderIndex() throws Exception {
+        String body = fetchListing(getGeoSoftFilesFtpLink());
+
+        int highestIndex = -1;
+        Matcher m = FOLDER_LINK.matcher(body);
+        while( m.find() ) {
+            String digits = m.group(1);
+            int index = digits.isEmpty() ? 0 : Integer.parseInt(digits);
+            highestIndex = Math.max(highestIndex, index);
+        }
+        if( highestIndex < 0 ) {
+            throw new Exception("no GEO series grouping folders found at " + getGeoSoftFilesFtpLink());
+        }
+        loggerRgd.info("highest GEO series grouping folder discovered: " + getNcbiDirectoryName(highestIndex)
+                + " (index " + highestIndex + ")");
+        return highestIndex;
+    }
+
+    // fetch an autoindex page over HTTP, retrying transient failures so a momentary network blip does
+    // not skip an entire folder (~1000 series); reuses the same retry budget as the file download path
+    private String fetchListing(String url) throws Exception {
         loggerRgd.info("Listing contents of " + url);
 
-        // retry transient failures so a momentary network blip does not skip an entire folder
-        // (~1000 series); reuses the same retry budget as the file download path
         int maxAttempts = Math.max(1, getMaxRetryCount());
         int retryIntervalInSeconds = getDownloadRetryInterval();
         Exception lastError = null;
 
         for( int attempt=1; attempt<=maxAttempts; attempt++ ) {
             try {
-                return listFilesOnce(url);
+                return fetchListingOnce(url);
             } catch( Exception e ) {
                 lastError = e;
                 loggerRgd.warn("listing attempt "+attempt+"/"+maxAttempts+" failed for "+url+" : "+e);
@@ -101,7 +141,7 @@ public class SoftFileDownloader extends FileDownloader2 {
         throw new Exception("failed to list "+url+" after "+maxAttempts+" attempts", lastError);
     }
 
-    private String[] listFilesOnce(String url) throws Exception {
+    private String fetchListingOnce(String url) throws Exception {
         HttpClient client = HttpClient.newBuilder()
                 .followRedirects(HttpClient.Redirect.NORMAL)
                 .connectTimeout(Duration.ofSeconds(60))
@@ -116,13 +156,7 @@ public class SoftFileDownloader extends FileDownloader2 {
         if( response.statusCode() != 200 ) {
             throw new Exception("listing " + url + " returned HTTP " + response.statusCode());
         }
-
-        List<String> fileNames = new ArrayList<>();
-        Matcher m = DIR_LINK.matcher(response.body());
-        while( m.find() ) {
-            fileNames.add(m.group(1));
-        }
-        return fileNames.toArray(new String[0]);
+        return response.body();
     }
 
     public static void setGeoSoftFilesFtpLink(String ftpLink) {
