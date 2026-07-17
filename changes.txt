@@ -1,3 +1,7 @@
+Jul 17, 2026
+  added '--gse <accession>' option: load and map just one GEO series (targeted run, no full folder scan or global remap)
+  README: documented --gse; corrected stale download description (single-threaded HTTP, not multi-threaded FTP)
+
 Jul 15, 2026
   download: discover the highest GEO grouping folder from the live root listing at runtime and download through it (logged during parsing), replacing the fixed indexOfStart/StopFolderForDownload properties
 

@@ -31,6 +31,10 @@ public class Manager {
 
 
     public static void main(String[] args) throws Exception {
+
+        // optional targeted run: '--gse GSE53960' loads and maps just that one series
+        String gseAccId = parseGseAccId(args);
+
         DefaultListableBeanFactory bf = new DefaultListableBeanFactory();
         new XmlBeanDefinitionReader(bf).loadBeanDefinitions(new FileSystemResource("properties/AppConfigure.xml"));
 
@@ -48,7 +52,7 @@ public class Manager {
             Date analysisCutoffDate = sdf.parse(manager.getAnalysisCutoffDate());
             loggerSummary.info("Analysis cutoff date: " + sdf.format(analysisCutoffDate));
 
-            manager.run(analysisCutoffDate);
+            manager.run(analysisCutoffDate, gseAccId);
 
         } catch (Exception e) {
             e.printStackTrace();
@@ -61,7 +65,22 @@ public class Manager {
         loggerSummary.info("========== Elapsed time " + Utils.formatElapsedTime(time0.getTime(), System.currentTimeMillis()) + ". ==========");
     }
 
-    public void run(Date analysisCutoffDate) throws Exception {
+    public void run(Date analysisCutoffDate, String gseAccId) throws Exception {
+
+        if( gseAccId != null ) {
+            // targeted single-series run: load just this one series, then map just this one series
+            // (no full GEO folder scan, no global remap of every pending row)
+            loggerSummary.info("Single-series run for " + gseAccId);
+            try {
+                loadSingleSeries(gseAccId);
+            } catch(Exception e) {
+                e.printStackTrace();
+            }
+            if (performMapping) {
+                mapRnaSeqToRgd( analysisCutoffDate, gseAccId );
+            }
+            return;
+        }
 
         if (performDownload) {
             try {
@@ -73,20 +92,17 @@ public class Manager {
 
         if (performMapping) {
             // (re)map all rows created after the cutoff date
-            mapRnaSeqToRgd( analysisCutoffDate );
+            mapRnaSeqToRgd( analysisCutoffDate, null );
         }
-
-       /* String input = "from, HeLa cell cytoplasmic extracts atria doing surgeries multi-unit " +
-                "eyes exocrine pancreas subdivision of organism along the main body axis Leydig's organ " +
-                "mixed ectoderm/mesoderm/endoderm-derived structure amenities conspirator are playing";
-        input = "Drosophila wandering larvae leg imaginal discs";
-        //System.out.println(rnaSeqToRgdMapper.lemmatize(input));
-       System.out.println(rnaSeqToRgdMapper.lemmatize(input));*/
     }
 
-    public void mapRnaSeqToRgd(Date dateCutoff) throws Exception {
+    public void mapRnaSeqToRgd(Date dateCutoff, String gseAccId) throws Exception {
 
-        rnaSeqToRgdMapper.init(dateCutoff);
+        if( gseAccId != null ) {
+            rnaSeqToRgdMapper.initForGse(gseAccId);
+        } else {
+            rnaSeqToRgdMapper.init(dateCutoff);
+        }
 
         rnaSeqToRgdMapper.getRnaSeqList().parallelStream().forEach( r -> {
             rnaSeqToRgdMapper.mapRnaSeqToRgd(r);
@@ -94,14 +110,46 @@ public class Manager {
         loggerSummary.info("Total number of records after Lemmatization : " + rnaSeqToRgdMapper.getNumberOfMappingsAfterLemmatization());
     }
 
+    // '--gse GSE53960' -> "GSE53960"; '--gse=GSE53960' also accepted; null when the option is absent
+    static String parseGseAccId(String[] args) {
+        final String opt = "--gse";
+        for( int i=0; i<args.length; i++ ) {
+            if( args[i].equals(opt) ) {
+                if( i+1 >= args.length ) {
+                    throw new IllegalArgumentException(opt+" requires a GSE accession, e.g. "+opt+" GSE53960");
+                }
+                return args[i+1].toUpperCase();
+            }
+            if( args[i].startsWith(opt+"=") ) {
+                return args[i].substring(opt.length()+1).toUpperCase();
+            }
+        }
+        return null;
+    }
+
+    private SoftFileDownloader newDownloader(CounterPool counters) {
+        SoftFileDownloader.setGeoSoftFilesFtpLink(ncbiSoftFilesFtpLink);
+        // downloads run one folder at a time (single-threaded by design, to be gentle on NCBI)
+        return new SoftFileDownloader(downloaderMaxRetryCount, downloaderDownloadRetryIntervalInSeconds, counters);
+    }
+
+    /** load (and, if enabled, map) a single GEO series named on the command line */
+    private void loadSingleSeries(String gseAccId) throws Exception {
+
+        CounterPool counters = new CounterPool();
+        SoftFileDownloader downloader = newDownloader(counters);
+        SoftFileLoader loader = new SoftFileLoader(downloader, new SoftFileParser(), new RnaSeqDAO());
+
+        loader.processSingleSeries(gseAccId);
+
+        loggerSummary.info("Total number of files downloaded: " + counters.get("numberOfDownloadedFiles"));
+    }
+
     private void downloadAndInsertRNASeqData() throws Exception{
 
         CounterPool counters = new CounterPool();
 
-        SoftFileDownloader.setGeoSoftFilesFtpLink(ncbiSoftFilesFtpLink);
-
-        // downloads run one folder at a time (single-threaded by design, to be gentle on NCBI)
-        SoftFileDownloader downloader = new SoftFileDownloader(downloaderMaxRetryCount, downloaderDownloadRetryIntervalInSeconds, counters);
+        SoftFileDownloader downloader = newDownloader(counters);
         SoftFileLoader loader = new SoftFileLoader(downloader, new SoftFileParser(), new RnaSeqDAO());
 
         // determine how many GEO grouping folders to download from the live root listing, so the run

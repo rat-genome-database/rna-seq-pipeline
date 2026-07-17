@@ -22,6 +22,37 @@ public class SoftFileLoader {
         this.softFileParser = softFileParser;
     }
 
+    /**
+     * download and load a single GEO series by accession, bypassing the folder scan.
+     * The grouping folder is derived from the accession (e.g. GSE53960 -> GSE53nnn/). Unlike
+     * processFolder(), the load is always attempted even if the series is already present --
+     * duplicate rows are detected and skipped by RnaSeqDAO.insertRnaSeq().
+     */
+    public void processSingleSeries(String gseAccId) throws Exception {
+
+        String directoryName = SoftFileDownloader.getDirectoryForAccession(gseAccId);
+        loggerSummary.info("Single-series load of " + gseAccId + " from folder " + directoryName);
+
+        String softFileName = softFileDownloader.downloadAndExtractSoftFile(directoryName, gseAccId);
+        if( softFileName == null ) {
+            loggerSummary.error("Download failed or series not found : " + gseAccId);
+            return;
+        }
+        System.out.println(softFileName);
+
+        Series series = softFileParser.parse(softFileName, loggerSummary);
+
+        // remove the file after use (*soft* files take up *a lot* of disk space)
+        new File(softFileName).delete();
+
+        if( series == null ) {
+            loggerSummary.error("Parse error : " + softFileName);
+            return;
+        }
+        rnaSeqDao.insertRnaSeq(series);
+        loggerSummary.info("Updated: " + series.getGeoAccessionID());
+    }
+
     /** download and load every GEO series in one NCBI grouping folder (e.g. GSE44nnn) */
     public void processFolder(int indexForFolder) throws Exception {
 

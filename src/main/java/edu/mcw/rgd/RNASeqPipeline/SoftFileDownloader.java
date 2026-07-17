@@ -32,6 +32,9 @@ public class SoftFileDownloader extends FileDownloader2 {
     // autoindex entry for a GEO series sub-directory, e.g. <a href="GSE123/">GSE123/</a>
     private static final Pattern DIR_LINK = Pattern.compile("href=\"(GSE\\d+)/\"", Pattern.CASE_INSENSITIVE);
 
+    // a GEO series accession, e.g. GSE53960; the captured digits are the series number
+    private static final Pattern GSE_ACCESSION = Pattern.compile("GSE(\\d+)", Pattern.CASE_INSENSITIVE);
+
     // autoindex entry for a GEO series grouping folder, e.g. <a href="GSEnnn/"> (index 0) or
     // <a href="GSE334nnn/"> (index 334); the captured digits are the thousands-block index
     private static final Pattern FOLDER_LINK = Pattern.compile("href=\"GSE(\\d*)nnn/\"", Pattern.CASE_INSENSITIVE);
@@ -169,6 +172,24 @@ public class SoftFileDownloader extends FileDownloader2 {
 
     public static String getNcbiDirectoryName(int i){
         return SOFT_FILE_PREFIX + (i == 0 ? "" : i) +  "nnn/";
+    }
+
+    /**
+     * Determine the GEO grouping-folder directory that holds a specific series accession.
+     * GEO groups series into thousands-blocks: GSE1..999 live in GSEnnn/, GSE1000..1999 in GSE1nnn/,
+     * GSE53960 in GSE53nnn/, and so on -- i.e. the folder index is the series number divided by 1000.
+     * @param gseAccId series accession, e.g. "GSE53960"
+     * @return grouping-folder directory name, e.g. "GSE53nnn/"
+     * @throws IllegalArgumentException if the accession is not of the form GSE&lt;digits&gt;
+     */
+    public static String getDirectoryForAccession(String gseAccId) {
+        Matcher m = GSE_ACCESSION.matcher(gseAccId);
+        if( !m.matches() ) {
+            throw new IllegalArgumentException("invalid GSE accession: '" + gseAccId
+                    + "' (expected format GSE<digits>, e.g. GSE53960)");
+        }
+        int seriesNumber = Integer.parseInt(m.group(1));
+        return getNcbiDirectoryName(seriesNumber / 1000);
     }
 
 }

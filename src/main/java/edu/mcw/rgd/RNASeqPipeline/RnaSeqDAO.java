@@ -200,6 +200,54 @@ public class RnaSeqDAO extends AbstractDAO {
         }
     }
 
+    /**
+     * get the mapping projection for a single GEO series, for the targeted single-GSE run.
+     * Unlike getAllRnaSeq(), this is scoped by accession rather than the cutoff date, so it maps
+     * exactly the pending rows of the requested series. Curated (non-pending) rows are left untouched.
+     * @param gseAccId GEO series accession, e.g. "GSE311000"
+     * @return list of RnaSeq objects for the given series, with the fields needed for mapping
+     * @throws Exception when something really bad happens in spring framework
+     */
+    public List<RnaSeq> getRnaSeqForMapping(String gseAccId) throws Exception {
+
+        List<String> organisms = new ArrayList<>();
+        for( int sp: SpeciesType.getSpeciesTypeKeys() ) {
+            if( sp>0 ) {
+                organisms.add( SpeciesType.getTaxonomicName(sp).toLowerCase() );
+            }
+        }
+        String organismList = Utils.concatenate(organisms, ",", "'");
+
+        List<RnaSeq> rnaSeqList = new ArrayList<>();
+
+        try( Connection conn = this.getConnection() ) {
+            String sql = """
+                SELECT key, sample_tissue, sample_strain, sample_cell_line, sample_cell_type
+                FROM rna_seq
+                WHERE LOWER(sample_organism) IN (%s)
+                  AND geo_accession_id = ?
+                  AND curation_status = 'pending'
+                """.formatted(organismList);
+
+            PreparedStatement ps = conn.prepareStatement(sql);
+            ps.setString(1, gseAccId);
+            ResultSet rs = ps.executeQuery();
+
+            while( rs.next() ) {
+                RnaSeq rnaSeq = new RnaSeq();
+                rnaSeq.setKey(rs.getInt("KEY"));
+                rnaSeq.setSampleTissue(rs.getString("SAMPLE_TISSUE"));
+                rnaSeq.setSampleStrain(rs.getString("SAMPLE_STRAIN"));
+                rnaSeq.setSampleCellLine(rs.getString("SAMPLE_CELL_LINE"));
+                rnaSeq.setSampleCellType(rs.getString("SAMPLE_CELL_TYPE"));
+                rnaSeqList.add(rnaSeq);
+            }
+        }
+
+        loggerSummary.info("Total number of RnaSeq records pulled from DB for " + gseAccId + " : " + rnaSeqList.size());
+        return rnaSeqList;
+    }
+
     public void updateRgdMappingFields(List<RnaSeq> rnaSeqList) throws Exception {
         Date time0 = Calendar.getInstance().getTime();
         for (RnaSeq r : rnaSeqList) {

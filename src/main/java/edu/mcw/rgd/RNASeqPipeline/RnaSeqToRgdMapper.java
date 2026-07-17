@@ -45,12 +45,21 @@ public class RnaSeqToRgdMapper{
 
 
     public void init(Date dateCutoff) throws Exception{
+        rnaSeqList = rnaSeqDao.getAllRnaSeq(dateCutoff);
+        loadReferenceData();
+    }
 
+    /** init for a targeted single-GSE run: map only the pending rows of the given series */
+    public void initForGse(String gseAccId) throws Exception{
+        rnaSeqList = rnaSeqDao.getRnaSeqForMapping(gseAccId);
+        loadReferenceData();
+    }
+
+    private void loadReferenceData() throws Exception{
 
         StrainDAO strainDAO = new StrainDAO();
         OntologyXDAO ontologyXDAO = new OntologyXDAO();
 
-        rnaSeqList = rnaSeqDao.getAllRnaSeq(dateCutoff);
         rnaSeqRgdStrainPairMapByTermAcc = tabDelimetedTextParser.getRnaSeqAndRgdStrainMap("byOntTermAccId");
         rnaSeqRgdStrainPairMapByRgdId = tabDelimetedTextParser.getRnaSeqAndRgdStrainMap("byRgdId");
         crossSpeciesTerms = ontologyXDAO.getActiveTerms(crossSpeciesAnatomyOntId);
