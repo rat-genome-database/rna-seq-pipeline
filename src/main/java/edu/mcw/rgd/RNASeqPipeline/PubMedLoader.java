@@ -3,7 +3,7 @@ package edu.mcw.rgd.RNASeqPipeline;
 import java.util.ArrayList;
 import java.util.Map;
 
-import edu.mcw.rgd.process.FileDownloader;
+import edu.mcw.rgd.process.FileDownloader2;
 import edu.mcw.rgd.process.Utils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -53,7 +53,7 @@ public class PubMedLoader {
     public static ArrayList<String> getPubMedIds(String gseAccession) throws Exception {
 
         String url = "https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?view=brief&acc="+gseAccession;
-        FileDownloader fd = new FileDownloader();
+        FileDownloader2 fd = new FileDownloader2();
         fd.setExternalFile(url);
         String content = fd.download();
 

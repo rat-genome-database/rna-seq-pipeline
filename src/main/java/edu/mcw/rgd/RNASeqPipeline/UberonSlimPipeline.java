@@ -42,16 +42,17 @@ public class UberonSlimPipeline {
         System.out.println("rows deleted from ONT_DAG_UBERON_SLIM: "+rowsDeleted);
 
         String sql2 = """
-            INSERT INTO ont_dag_uberon_slim (
-            SELECT ?,child_term_acc,SYSDATE,SYSDATE FROM(
-            SELECT child_term_acc
-            FROM ont_dag
-            START WITH parent_term_acc = ?
-            CONNECT BY PRIOR child_term_acc = parent_term_acc
-             INTERSECT
-            SELECT tissue_ont_id FROM sample
-            )
-            )
+            INSERT INTO ont_dag_uberon_slim
+            SELECT ?,child_term_acc,LOCALTIMESTAMP(0),LOCALTIMESTAMP(0) FROM(
+              WITH RECURSIVE d AS (
+                SELECT child_term_acc FROM ont_dag WHERE parent_term_acc = ?
+                UNION
+                SELECT o.child_term_acc FROM ont_dag o JOIN d ON o.parent_term_acc = d.child_term_acc
+              )
+              SELECT child_term_acc FROM d
+               INTERSECT
+              SELECT tissue_ont_id FROM sample
+            ) x
             """;
 
         for( String uberonAcc: uberonAccessions ) {

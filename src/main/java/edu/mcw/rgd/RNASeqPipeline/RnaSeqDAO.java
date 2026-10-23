@@ -257,7 +257,7 @@ public class RnaSeqDAO extends AbstractDAO {
     }
 
     public int checkConnection() throws Exception{
-        String q = "SELECT 1 FROM DUAL";
+        String q = "SELECT 1";
         return this.getCount(q);
     }
 
@@ -269,7 +269,7 @@ public class RnaSeqDAO extends AbstractDAO {
      */
     public int updateRgdFields(RnaSeq rnaSeq) throws Exception{
 
-        String sql = "UPDATE rna_seq SET RGD_TISSUE_TERM_ACC=?, RGD_CELL_TERM_ACC=?, RGD_STRAIN_TERM_ACC=?, RGD_STRAIN_RGD_ID=?, DATE_MAPPED=SYSDATE "+
+        String sql = "UPDATE rna_seq SET RGD_TISSUE_TERM_ACC=?, RGD_CELL_TERM_ACC=?, RGD_STRAIN_TERM_ACC=?, RGD_STRAIN_RGD_ID=?, DATE_MAPPED=LOCALTIMESTAMP(0) "+
                 "WHERE key=? ";
 
         return update(sql, rnaSeq.getRgdTissueTermAcc(), rnaSeq.getRgdCellTermAcc(),

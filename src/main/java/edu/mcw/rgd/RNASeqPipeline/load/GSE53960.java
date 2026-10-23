@@ -11,7 +11,7 @@ import edu.mcw.rgd.datamodel.RgdId;
 import edu.mcw.rgd.datamodel.SpeciesType;
 import edu.mcw.rgd.datamodel.XdbId;
 import edu.mcw.rgd.datamodel.pheno.*;
-import edu.mcw.rgd.process.FileDownloader;
+import edu.mcw.rgd.process.FileDownloader2;
 import edu.mcw.rgd.process.Utils;
 
 import java.io.BufferedReader;
@@ -224,12 +224,13 @@ public class GSE53960 {
 
         int splitPos = sampleSupplementaryFiles.indexOf("||");
         if( splitPos>0 ) {
-            String fileUrl = sampleSupplementaryFiles.substring(0, splitPos);
+            // FileDownloader2 does not support FTP; NCBI serves the same files over https
+            String fileUrl = sampleSupplementaryFiles.substring(0, splitPos).replace("ftp://ftp.ncbi.nlm.nih.gov/", "https://ftp.ncbi.nlm.nih.gov/");
             int slashPos = fileUrl.lastIndexOf('/');
             String fileName = fileUrl.substring(slashPos+1);
             System.out.println(fileUrl);
 
-            FileDownloader fd = new FileDownloader();
+            FileDownloader2 fd = new FileDownloader2();
             fd.setExternalFile(fileUrl);
             fd.setLocalFile("data/"+fileName);
             fd.setUseCompression(true);

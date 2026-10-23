@@ -1,3 +1,6 @@
+Oct 23, 2026
+  migrated to postgres; all downloads through FileDownloader2; updated dependencies
+
 Jul 17, 2026
   added '--gse <accession>' option: load and map just one GEO series (targeted run, no full folder scan or global remap)
   README: documented --gse; corrected stale download description (single-threaded HTTP, not multi-threaded FTP)
